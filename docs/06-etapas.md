@@ -19,6 +19,7 @@ Pendências anotadas na Etapa 1 (antes do piloto, salvo indicação):
 - Apagar a chave secreta "default" do Supabase, que não é usada (a usada é a "site").
 - Quem perdeu o acesso e entra de novo cai em "Cadastre o seu salão"; mostrar um aviso mais claro.
 - Projeto Supabase de produção em São Paulo e planos pagos (Supabase e Vercel) antes de dados reais.
+- LGPD: botão de "excluir pessoa" que apaga a conta e troca o nome por "Pessoa removida" na auditoria (feito à mão no banco de teste em 16/11/2026, a pedido da dona).
 
 ## Etapa 2: cadastros
 - Serviços com categorias, profissionais e assistentes, clientes.

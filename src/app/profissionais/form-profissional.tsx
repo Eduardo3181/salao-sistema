@@ -61,7 +61,7 @@ export default function FormProfissional({ vinculos, profissional }: { vinculos:
           ))}
         </select>
         <span className="mt-1 block text-xs text-stone-500">
-          Escolha &quot;Eu&quot; se você também atende. Quem só atende não precisa de conta.
+          Escolha &quot;Eu&quot; se você também atende. Para a profissional usar o app, dê acesso a ela em Equipe e ligue aqui.
         </span>
       </label>
 

@@ -16,7 +16,7 @@ export type EstadoConvite =
   | undefined;
 
 const EMAIL_VALIDO = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-const PERFIS_PERMITIDOS: Perfil[] = ["recepcao", "profissional"];
+const PERFIS_PERMITIDOS: Perfil[] = ["recepcao", "profissional", "assistente"];
 
 /** Confere que quem está pedindo é dono do salão. */
 async function exigirDono() {
@@ -45,7 +45,7 @@ async function adicionarPessoaInterno(form: FormData): Promise<EstadoConvite> {
 
   if (nome.length < 2 || nome.length > 120) return { erro: "Digite o nome da pessoa (2 a 120 letras)." };
   if (!EMAIL_VALIDO.test(email)) return { erro: "Digite um e-mail válido." };
-  if (!PERFIS_PERMITIDOS.includes(perfil)) return { erro: "Escolha Recepção ou Profissional." };
+  if (!PERFIS_PERMITIDOS.includes(perfil)) return { erro: "Escolha o perfil: Recepção, Profissional ou Assistente." };
 
   const admin = criarClienteAdmin();
 

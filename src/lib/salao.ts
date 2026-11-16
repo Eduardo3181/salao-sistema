@@ -1,12 +1,13 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
 import { formatarDuracao, formatarReais } from "@/lib/dinheiro";
 
-export type Perfil = "dono" | "recepcao" | "profissional";
+export type Perfil = "dono" | "recepcao" | "profissional" | "assistente";
 
 export const NOME_PERFIL: Record<Perfil, string> = {
   dono: "Dono(a)",
   recepcao: "Recepção",
   profissional: "Profissional",
+  assistente: "Assistente",
 };
 
 export type MeuSalao = { salaoId: string; nome: string; perfil: Perfil; trocarSenha: boolean };
@@ -47,6 +48,7 @@ export async function buscarMeuSalao(supabase: SupabaseClient, userId: string): 
 
 export type RegistroAuditoria = {
   id: number;
+  entidade_id?: string | null;
   user_id: string | null;
   acao: string;
   entidade: string;
@@ -55,8 +57,11 @@ export type RegistroAuditoria = {
   em: string;
 };
 
-/** Frase em português para um registro da auditoria. */
-export function descreverAuditoria(r: RegistroAuditoria): string {
+/**
+ * Frase em português para um registro da auditoria.
+ * nomesClientes: nome ATUAL de cada cliente (a auditoria de clientes não guarda dados pessoais).
+ */
+export function descreverAuditoria(r: RegistroAuditoria, nomesClientes?: Map<string, string>): string {
   if (r.entidade === "saloes" && r.acao === "insert") return `Salão criado: "${r.depois?.nome}"`;
   if (r.entidade === "saloes" && r.acao === "update") {
     if (r.antes?.nome !== r.depois?.nome) return `Nome do salão alterado de "${r.antes?.nome}" para "${r.depois?.nome}"`;
@@ -114,8 +119,30 @@ export function descreverAuditoria(r: RegistroAuditoria): string {
     if (r.antes?.user_id !== r.depois?.user_id) mudancas.push(r.depois?.user_id ? "ligado(a) a uma conta" : "desligado(a) da conta");
     return mudancas.length ? `${nome}: ${mudancas.join(", ")}` : `${nome} alterado(a)`;
   }
+  if (r.entidade === "clientes") {
+    const nome = (r.entidade_id && nomesClientes?.get(r.entidade_id)) || "cliente removida";
+    if (r.acao === "insert") return `Cliente cadastrada: ${nome}`;
+    if (r.antes?.ativo === true && r.depois?.ativo === false) return `Cliente desativada: ${nome}`;
+    if (r.antes?.ativo === false && r.depois?.ativo === true) return `Cliente reativada: ${nome}`;
+    const campos = ((r.depois?.campos_alterados as string[] | undefined) ?? []).map((c) => NOME_CAMPO_CLIENTE[c] ?? c);
+    return campos.length ? `Ficha de ${nome} alterada (${campos.join(", ")})` : `Ficha de ${nome} alterada`;
+  }
+  if (r.entidade === "configuracao_salao") {
+    const ligou = r.depois?.profissionais_editam_clientes === true;
+    if (r.acao === "insert" || r.antes?.profissionais_editam_clientes !== r.depois?.profissionais_editam_clientes)
+      return `Configuração: profissionais ${ligou ? "agora podem" : "não podem mais"} cadastrar e alterar clientes`;
+    return "Configurações do salão alteradas";
+  }
   return `${r.acao} em ${r.entidade}`;
 }
+
+const NOME_CAMPO_CLIENTE: Record<string, string> = {
+  nome: "nome",
+  telefone: "telefone",
+  nascimento: "nascimento",
+  observacoes: "observações",
+  ativo: "situação",
+};
 
 /** Data e hora no horário de Brasília. */
 export function dataHoraBrasil(iso: string): string {

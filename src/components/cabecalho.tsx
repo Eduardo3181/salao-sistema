@@ -3,13 +3,19 @@ import { sair } from "@/app/acoes";
 import { NOME_PERFIL, type MeuSalao } from "@/lib/salao";
 
 const LINKS = [
-  { href: "/painel", rotulo: "Início" },
-  { href: "/servicos", rotulo: "Serviços" },
-  { href: "/profissionais", rotulo: "Quem atende" },
+  { href: "/painel", rotulo: "Início", soDono: false },
+  { href: "/clientes", rotulo: "Clientes", soDono: false },
+  { href: "/servicos", rotulo: "Serviços", soDono: false },
+  { href: "/profissionais", rotulo: "Quem atende", soDono: false },
+  { href: "/configuracoes", rotulo: "Configurações", soDono: true },
 ] as const;
 
 /** Cabeçalho das páginas internas: nome do salão, perfil, menu e Sair. */
 export function Cabecalho({ salao, atual }: { salao: MeuSalao; atual: (typeof LINKS)[number]["href"] }) {
+  // Assistente: por enquanto só o Início (agenda e comissão chegam nas Etapas 3 e 5).
+  const links = LINKS.filter((l) =>
+    salao.perfil === "assistente" ? l.href === "/painel" : !l.soDono || salao.perfil === "dono",
+  );
   return (
     <header className="border-b border-stone-200 bg-white">
       <div className="mx-auto flex max-w-3xl items-center justify-between gap-4 px-4 pt-3">
@@ -24,7 +30,7 @@ export function Cabecalho({ salao, atual }: { salao: MeuSalao; atual: (typeof LI
         </form>
       </div>
       <nav className="mx-auto flex max-w-3xl gap-1 overflow-x-auto px-2 pt-2">
-        {LINKS.map((l) => (
+        {links.map((l) => (
           <Link
             key={l.href}
             href={l.href}

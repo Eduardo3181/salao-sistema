@@ -40,6 +40,7 @@ export function novaConexao() {
 
   /** Cria um usuário de mentira (só existe dentro da transação). */
   async function criarUsuario() {
+    await comoAdmin();
     const id = randomUUID();
     await db.query(
       "insert into auth.users (id, aud, role, email) values ($1, 'authenticated', 'authenticated', $2)",

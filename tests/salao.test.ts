@@ -117,3 +117,25 @@ describe("Registro de quem atende", () => {
     ).toBe("Bia desativado(a)");
   });
 });
+
+describe("Registro de clientes (sem dados pessoais guardados)", () => {
+  const cli = { ...base, entidade: "clientes", entidade_id: "c1" };
+  const nomes = new Map([["c1", "Maria"]]);
+  it("usa o nome atual e lista os campos alterados", () => {
+    expect(descreverAuditoria({ ...cli, depois: { ativo: true, campos_alterados: [] } }, nomes)).toBe("Cliente cadastrada: Maria");
+    expect(
+      descreverAuditoria(
+        { ...cli, acao: "update", antes: { ativo: true }, depois: { ativo: true, campos_alterados: ["observacoes", "telefone"] } },
+        nomes,
+      ),
+    ).toBe("Ficha de Maria alterada (observações, telefone)");
+  });
+  it("cliente apagada aparece como 'cliente removida'", () => {
+    expect(descreverAuditoria({ ...cli, depois: { ativo: true } }, new Map())).toBe("Cliente cadastrada: cliente removida");
+  });
+  it("descreve a chave de permissão", () => {
+    expect(
+      descreverAuditoria({ ...base, entidade: "configuracao_salao", depois: { profissionais_editam_clientes: true } }),
+    ).toBe("Configuração: profissionais agora podem cadastrar e alterar clientes");
+  });
+});

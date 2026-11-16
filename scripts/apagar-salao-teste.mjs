@@ -33,7 +33,7 @@ for (const id of ids) {
 }
 
 // Ordem importa por causa das chaves estrangeiras.
-for (const tabela of ["profissionais", "servicos", "categorias_servico", "usuarios_salao", "audit_log"]) {
+for (const tabela of ["clientes", "configuracao_salao", "profissionais", "servicos", "categorias_servico", "usuarios_salao", "audit_log"]) {
   falhou((await a.from(tabela).delete().in("salao_id", saloes)).error);
 }
 falhou((await a.from("saloes").delete().in("id", saloes)).error);

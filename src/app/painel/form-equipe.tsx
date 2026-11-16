@@ -78,6 +78,7 @@ export default function FormEquipe() {
           <option value="" disabled>Escolha...</option>
           <option value="recepcao">Recepção</option>
           <option value="profissional">Profissional</option>
+          <option value="assistente">Assistente (só agenda e comissão)</option>
         </select>
       </label>
       <Botao type="submit" carregando={carregando}>Adicionar à equipe</Botao>

@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import { redirect } from "next/navigation";
 import { Suspense } from "react";
 import { Cabecalho } from "@/components/cabecalho";
 import { formatarDuracao, formatarReais } from "@/lib/dinheiro";
@@ -24,6 +25,7 @@ const botaoPequeno =
 
 async function Servicos() {
   const { supabase, salao, ehDono } = await exigirSalao();
+  if (salao.perfil === "assistente") redirect("/painel");
   const { categorias, servicos } = await buscarCatalogo(supabase, salao.salaoId);
 
   // Quem não é dono vê só o que está ativo.

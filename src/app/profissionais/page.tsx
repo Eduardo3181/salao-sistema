@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import { redirect } from "next/navigation";
 import { Suspense } from "react";
 import { Cabecalho } from "@/components/cabecalho";
 import { buscarProfissionais, NOME_TIPO, opcoesDeVinculo, type Profissional } from "@/lib/profissionais";
@@ -24,6 +25,7 @@ const botaoPequeno =
 
 async function Profissionais() {
   const { supabase, userId, salao, ehDono } = await exigirSalao();
+  if (salao.perfil === "assistente") redirect("/painel");
   const [profissionais, equipe] = await Promise.all([
     buscarProfissionais(supabase, salao.salaoId),
     ehDono
@@ -46,8 +48,7 @@ async function Profissionais() {
         <div>
           <h1 className="text-xl font-semibold text-stone-900">Quem atende</h1>
           <p className="mt-1 text-sm text-stone-500">
-            Profissionais e assistentes que aparecem na agenda e nas comissões. Não precisam de e-mail nem de acesso ao
-            sistema.
+            Profissionais e assistentes que aparecem na agenda e nas comissões. Dá para cadastrar agora e dar acesso ao app depois.
           </p>
         </div>
 

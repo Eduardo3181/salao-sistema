@@ -42,3 +42,17 @@
 - Importação por planilha: construída e testada só com dados de mentira; clientes reais só no banco de produção (São Paulo).
 - Nada é apagado nos cadastros: itens ficam inativos, para não alterar comandas e relatórios antigos.
 - **Equipe ≠ Profissionais** (pedido da dona após teste, 16/11/2026): "Equipe" é só quem precisa entrar no sistema (opcional; salão de uma pessoa não adiciona ninguém). "Profissionais" é o cadastro de quem atende (agenda e comissão), sem exigir e-mail; a dona pode se cadastrar como profissional. Nada no primeiro acesso é obrigatório além de cadastrar o salão: o painel mostra "Primeiros passos" opcionais, para quem está testando não ficar presa.
+
+## Acesso das profissionais pelo app (decisão da dona, 17/11/2026)
+Profissionais (cabeleireiro, manicure, podólogo, maquiador etc.) usam o sistema pelo celular (o mesmo site, instalado como app/PWA) e podem:
+- ver a **própria** agenda e **alterar os próprios** agendamentos;
+- cadastrar cliente e agendar serviço a qualquer momento;
+- abrir as comandas das **próprias** clientes e lançar serviços;
+- consultar o **próprio** faturamento e as **próprias** comissões.
+Não podem ver agendas, comandas, faturamento nem comissões de outras profissionais. O banco (RLS) deve garantir isso, com testes, nas Etapas 3, 4 e 5.
+Cadastro em "Quem atende" continua possível sem e-mail; o acesso ao app pode ser dado depois (ligando a pessoa da Equipe ao cadastro).
+Respostas da dona (17/11/2026):
+- Chave "Profissionais podem cadastrar e alterar clientes" continua nas Configurações, mas começa **ligada**.
+- A profissional busca clientes **só pelo nome** e **não vê o telefone**; verá o telefone apenas das clientes com comanda aberta com ela (Etapa 4). Ela pode informar o telefone ao cadastrar uma cliente nova, mas não lê nem altera depois (travado no banco).
+- Assistente só usa o app se o dono der acesso (perfil "Assistente" na Equipe), e só para **ver a própria agenda e consultar a própria comissão**. Não vê clientes nem altera nada.
+- Técnico: a leitura de clientes passa pela função clientes_do_salao, que esconde o telefone de quem não pode ver; a coluna telefone não pode ser lida diretamente por ninguém.

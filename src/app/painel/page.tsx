@@ -42,7 +42,7 @@ async function Painel() {
     ? await Promise.all([
         supabase
           .from("audit_log")
-          .select("id, user_id, acao, entidade, antes, depois, em")
+          .select("id, user_id, acao, entidade, entidade_id, antes, depois, em")
           .eq("salao_id", salao.salaoId)
           .order("em", { ascending: false })
           .limit(30),
@@ -51,6 +51,15 @@ async function Painel() {
     : [{ data: null }, { data: null }];
 
   const membros = (equipe ?? []) as MembroEquipe[];
+  // A auditoria de clientes não guarda o nome (LGPD): busca o nome atual de quem aparece no registro.
+  const idsClientes = [
+    ...new Set(((auditoria ?? []) as RegistroAuditoria[]).filter((r) => r.entidade === "clientes" && r.entidade_id).map((r) => r.entidade_id!)),
+  ];
+  const nomesClientes = new Map(
+    idsClientes.length
+      ? ((await supabase.from("clientes").select("id, nome").in("id", idsClientes)).data ?? []).map((c) => [c.id as string, c.nome as string])
+      : [],
+  );
   const temProfissionais = ehDono
     ? ((await supabase.from("profissionais").select("id", { count: "exact", head: true }).eq("salao_id", salao.salaoId))
         .count ?? 0) > 0
@@ -86,7 +95,7 @@ async function Painel() {
                   feito={temProfissionais}
                   href="/profissionais"
                   titulo="Cadastrar quem atende"
-                  detalhe="Profissionais e assistentes, sem precisar de e-mail. Se você atende, cadastre-se também."
+                  detalhe="Profissionais e assistentes. Se você atende, cadastre-se também."
                 />
                 <PassoInicial
                   feito={membros.length > 1}
@@ -98,7 +107,9 @@ async function Painel() {
             </>
           ) : (
             <p className="mt-2 text-stone-600">
-              Use o menu acima. Agenda, comanda, comissões e caixa vão aparecer aqui nas próximas etapas.
+              {salao.perfil === "assistente"
+                ? "A sua agenda e as suas comissões vão aparecer aqui nas próximas etapas."
+                : "Use o menu acima. Agenda, comanda, comissões e caixa vão aparecer aqui nas próximas etapas."}
             </p>
           )}
         </section>
@@ -150,7 +161,7 @@ async function Painel() {
             <ul className="mt-4 divide-y divide-stone-100">
               {(auditoria as RegistroAuditoria[]).map((r) => (
                 <li key={r.id} className="flex flex-col gap-0.5 py-3 sm:flex-row sm:justify-between sm:gap-4">
-                  <span className="text-sm text-stone-800">{descreverAuditoria(r)}</span>
+                  <span className="text-sm text-stone-800">{descreverAuditoria(r, nomesClientes)}</span>
                   <span className="shrink-0 text-xs text-stone-500">
                     {dataHoraBrasil(r.em)} · {autor(r.user_id)}
                   </span>

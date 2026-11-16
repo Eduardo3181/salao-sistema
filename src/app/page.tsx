@@ -1,13 +1,20 @@
+import Link from "next/link";
+
+// Quem já está logado é levado ao painel pelo proxy.ts.
 export default function Inicio() {
   return (
-    <main className="flex flex-1 items-center justify-center bg-zinc-50 px-4 dark:bg-zinc-950">
-      <div className="w-full max-w-md rounded-2xl bg-white p-8 text-center shadow-sm dark:bg-zinc-900">
-        <h1 className="text-2xl font-semibold text-zinc-900 dark:text-zinc-50">
-          Sistema do Salão
-        </h1>
-        <p className="mt-3 text-zinc-600 dark:text-zinc-400">
-          Em construção. Etapa 1: fundação.
-        </p>
+    <main className="flex flex-1 items-center justify-center bg-stone-100 px-4">
+      <div className="w-full max-w-sm text-center">
+        <h1 className="text-2xl font-semibold text-stone-900">Sistema do Salão</h1>
+        <p className="mt-2 text-stone-600">Agenda, comanda, comissão e caixa em um só lugar.</p>
+        <div className="mt-8 space-y-3">
+          <Link href="/entrar" className="block rounded-lg bg-rose-700 px-4 py-3 font-semibold text-white hover:bg-rose-800">
+            Entrar
+          </Link>
+          <Link href="/criar-conta" className="block rounded-lg bg-white px-4 py-3 font-semibold text-rose-700 ring-1 ring-rose-200 hover:bg-rose-50">
+            Criar conta
+          </Link>
+        </div>
       </div>
     </main>
   );

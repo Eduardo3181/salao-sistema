@@ -17,6 +17,9 @@
 - Supabase grátis permite 2 projetos ativos por conta; Vercel grátis (Hobby) é só para uso não comercial: trocar para plano pago antes de cobrar.
 - Ativar verificação em duas etapas (2FA) nas três contas.
 - Pasta do projeto: `C:\Projetos\salao`, fora do OneDrive (a sincronização trava com os arquivos do projeto).
+- Projeto Supabase de **teste**: `salao-sistema-teste`, criado na região **us-east-1 (EUA)**. Só pode ter dados de mentira. O projeto de **produção** deve ser criado em **São Paulo (sa-east-1)**, por LGPD e velocidade (a região não muda depois).
+- Migrações e testes rodam contra o projeto de teste (caminho escolhido pela dona, sem Docker). O endereço do banco com senha fica só no `.env.local`. Comandos: `npm run db:push` (aplica migrações) e `npm test` (testes; desfazem tudo no final).
+- Perfis de acesso: `dono`, `recepcao`, `profissional`. Plano e status do salão só o sistema altera; o dono altera só o nome. Auditoria é escrita por gatilhos do banco e ninguém apaga.
 - Plano pago do Supabase (backup diário) assim que houver dado real de cliente. Estimativa: cerca de US$ 45/mês somando Supabase Pro e Vercel Pro (conferir preços e termos de uso comercial).
 - Novo projeto do zero; código antigo só como referência.
 

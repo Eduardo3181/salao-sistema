@@ -3,7 +3,7 @@
 ## Checklist técnico
 - [ ] HTTPS em tudo
 - [ ] Login pelo Supabase Auth; senhas nunca guardadas por nós
-- [ ] RLS ativa em todas as tabelas de negócio, com teste de isolamento entre salões
+- [x] RLS ativa em todas as tabelas de negócio, com teste de isolamento entre salões (`tests/isolamento.test.ts`; o teste também falha se alguma tabela do schema `public` ficar sem RLS)
 - [ ] Perfis de acesso (dono, recepção, profissional) e 2FA para o dono
 - [ ] Proteção contra SQL injection, XSS e CSRF; limite de tentativas de login
 - [ ] Backups diários (plano pago do Supabase) e teste de restauração

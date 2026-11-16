@@ -23,7 +23,7 @@ export default function PaginaPainel() {
 
 async function Painel() {
   const { supabase, userId } = await usuarioLogado();
-  if (!userId) redirect("/entrar");
+  if (!userId) redirect("/auth/sair");
 
   const salao = await buscarMeuSalao(supabase, userId);
   if (!salao) redirect("/novo-salao");

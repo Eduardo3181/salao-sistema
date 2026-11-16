@@ -31,10 +31,15 @@ export async function criarClienteSupabase() {
   );
 }
 
-/** Devolve o id do usuário logado (verificado), ou null. */
+/**
+ * Devolve o id do usuário logado, ou null.
+ * Pergunta ao servidor de login (getUser), então detecta conta apagada ou bloqueada,
+ * e não só um "crachá" ainda válido no navegador.
+ * Quando vier null, a página deve mandar para /auth/sair (limpa o login do navegador).
+ */
 export async function usuarioLogado() {
   const supabase = await criarClienteSupabase();
-  const { data } = await supabase.auth.getClaims();
-  const id = data?.claims?.sub;
-  return id ? { supabase, userId: id } : { supabase, userId: null };
+  const { data } = await supabase.auth.getUser();
+  const id = data?.user?.id ?? null;
+  return { supabase, userId: id };
 }

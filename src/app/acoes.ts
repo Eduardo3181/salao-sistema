@@ -75,7 +75,13 @@ export async function cadastrarSalao(_: EstadoForm, form: FormData): Promise<Est
 
   const supabase = await criarClienteSupabase();
   const { error } = await supabase.rpc("criar_salao", { p_nome: nome });
-  if (error) return { erro: "Não foi possível cadastrar o salão. Tente de novo." };
+  if (error) {
+    // Só o código técnico vai para o registro (nada de dado pessoal).
+    console.error("cadastrarSalao falhou:", error.code);
+    // 23503 = conta não existe mais; 42501 = login inválido. Limpa o login.
+    if (error.code === "23503" || error.code === "42501") redirect("/auth/sair");
+    return { erro: "Não foi possível cadastrar o salão. Tente de novo." };
+  }
 
   redirect("/painel");
 }

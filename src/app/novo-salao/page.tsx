@@ -20,7 +20,7 @@ export default function PaginaNovoSalao() {
 
 async function Conteudo() {
   const { supabase, userId } = await usuarioLogado();
-  if (!userId) redirect("/entrar");
+  if (!userId) redirect("/auth/sair");
   if (await buscarMeuSalao(supabase, userId)) redirect("/painel");
   return <FormNovoSalao />;
 }

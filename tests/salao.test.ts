@@ -70,3 +70,30 @@ describe("Registro do dono", () => {
     );
   });
 });
+
+describe("Registro de serviços", () => {
+  const serv = { ...base, entidade: "servicos" };
+  it("descreve o serviço criado com duração e preço", () => {
+    expect(
+      descreverAuditoria({ ...serv, depois: { nome: "Corte", duracao_min: 45, preco_centavos: 8000 } }),
+    ).toBe('Serviço criado: "Corte" (45min, R$ 80,00)');
+  });
+  it("descreve a mudança de preço", () => {
+    expect(
+      descreverAuditoria({
+        ...serv,
+        acao: "update",
+        antes: { nome: "Corte", duracao_min: 45, preco_centavos: 8000, ativo: true },
+        depois: { nome: "Corte", duracao_min: 45, preco_centavos: 9000, ativo: true },
+      }),
+    ).toBe('Serviço "Corte": preço de R$ 80,00 para R$ 90,00');
+  });
+  it("descreve serviço desativado e categoria criada", () => {
+    expect(
+      descreverAuditoria({ ...serv, acao: "update", antes: { nome: "Corte", ativo: true }, depois: { nome: "Corte", ativo: false } }),
+    ).toBe('Serviço "Corte" desativado');
+    expect(descreverAuditoria({ ...base, entidade: "categorias_servico", depois: { nome: "Cabelo" } })).toBe(
+      'Categoria criada: "Cabelo"',
+    );
+  });
+});

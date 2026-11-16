@@ -1,4 +1,5 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
+import { formatarDuracao, formatarReais } from "@/lib/dinheiro";
 
 export type Perfil = "dono" | "recepcao" | "profissional";
 
@@ -74,6 +75,32 @@ export function descreverAuditoria(r: RegistroAuditoria): string {
     if (r.antes?.trocar_senha === true && r.depois?.trocar_senha === false)
       return `${quem} trocou a senha provisória`;
     return `Acesso de ${quem} alterado (${perfil})`;
+  }
+  if (r.entidade === "categorias_servico") {
+    const nome = r.depois?.nome ?? r.antes?.nome;
+    if (r.acao === "insert") return `Categoria criada: "${nome}"`;
+    if (r.antes?.ativo === true && r.depois?.ativo === false) return `Categoria "${nome}" desativada`;
+    if (r.antes?.ativo === false && r.depois?.ativo === true) return `Categoria "${nome}" reativada`;
+    if (r.antes?.nome !== r.depois?.nome) return `Categoria renomeada de "${r.antes?.nome}" para "${r.depois?.nome}"`;
+    return `Categoria "${nome}" alterada`;
+  }
+  if (r.entidade === "servicos") {
+    const nome = r.depois?.nome ?? r.antes?.nome;
+    const preco = (v: unknown) => formatarReais(Number(v));
+    if (r.acao === "insert")
+      return `Serviço criado: "${nome}" (${formatarDuracao(Number(r.depois?.duracao_min))}, ${preco(r.depois?.preco_centavos)})`;
+    if (r.antes?.ativo === true && r.depois?.ativo === false) return `Serviço "${nome}" desativado`;
+    if (r.antes?.ativo === false && r.depois?.ativo === true) return `Serviço "${nome}" reativado`;
+    const mudancas: string[] = [];
+    if (r.antes?.nome !== r.depois?.nome) mudancas.push(`nome de "${r.antes?.nome}" para "${r.depois?.nome}"`);
+    if (Number(r.antes?.preco_centavos) !== Number(r.depois?.preco_centavos))
+      mudancas.push(`preço de ${preco(r.antes?.preco_centavos)} para ${preco(r.depois?.preco_centavos)}`);
+    if (Number(r.antes?.duracao_min) !== Number(r.depois?.duracao_min))
+      mudancas.push(
+        `duração de ${formatarDuracao(Number(r.antes?.duracao_min))} para ${formatarDuracao(Number(r.depois?.duracao_min))}`,
+      );
+    if (r.antes?.categoria_id !== r.depois?.categoria_id) mudancas.push("categoria");
+    return mudancas.length ? `Serviço "${nome}": ${mudancas.join(", ")}` : `Serviço "${nome}" alterado`;
   }
   return `${r.acao} em ${r.entidade}`;
 }

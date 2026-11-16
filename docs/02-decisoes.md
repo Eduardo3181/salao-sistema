@@ -32,3 +32,12 @@
 ## Lançamento
 - Usar no próprio salão, depois piloto com 3 a 5 salões conhecidos, e só então cobrar.
 - Testar anúncios com R$ 500 a R$ 1.000 para medir o CAC antes de investir mais. Estimativas ainda não medidas: CAC cerca de R$ 200, cancelamento 5% ao mês.
+
+## Etapa 2: cadastros (decisões da dona, 16/11/2026)
+- Ficha do cliente: nome, telefone (WhatsApp), data de nascimento e observações. Sem CPF e sem endereço (LGPD: o mínimo necessário).
+- Serviços e preços: só o dono cadastra e altera; recepção e profissionais só consultam.
+- Preço único por serviço; o valor cobrado pode ser ajustado na comanda (Etapa 4).
+- Clientes: dono e recepção sempre podem cadastrar e alterar. Profissionais dependem de uma chave nas Configurações do salão ("Profissionais podem cadastrar e alterar clientes"), desligada por padrão; cada salão decide. Mudança na chave vai para a auditoria.
+- Ideia para depois (não pedida ainda): usar o mesmo tipo de chave para "Recepção pode alterar preços".
+- Importação por planilha: construída e testada só com dados de mentira; clientes reais só no banco de produção (São Paulo).
+- Nada é apagado nos cadastros: itens ficam inativos, para não alterar comandas e relatórios antigos.

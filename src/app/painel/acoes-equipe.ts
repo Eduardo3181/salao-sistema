@@ -8,7 +8,11 @@ import { criarClienteAdmin } from "@/lib/supabase/admin";
 import { usuarioLogado } from "@/lib/supabase/server";
 
 export type EstadoConvite =
-  | { erro?: string; sucesso?: { nome: string; email: string; perfil: string; senha: string | null } }
+  | {
+      erro?: string;
+      sucesso?: { nome: string; email: string; perfil: string; senha: string | null };
+      valores?: { nome: string; email: string; perfil: string };
+    }
   | undefined;
 
 const EMAIL_VALIDO = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -24,6 +28,14 @@ async function exigirDono() {
 }
 
 export async function adicionarPessoa(_: EstadoConvite, form: FormData): Promise<EstadoConvite> {
+  const r = await adicionarPessoaInterno(form);
+  // Em caso de erro, devolve o que foi digitado para o formulário não perder nada.
+  if (!r?.erro) return r;
+  const valores = { nome: String(form.get("nome") ?? ""), email: String(form.get("email") ?? ""), perfil: String(form.get("perfil") ?? "") };
+  return { ...r, valores };
+}
+
+async function adicionarPessoaInterno(form: FormData): Promise<EstadoConvite> {
   const ctx = await exigirDono();
   if (!ctx) return { erro: "Só o dono do salão pode adicionar pessoas." };
 

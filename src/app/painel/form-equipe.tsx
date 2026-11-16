@@ -47,16 +47,16 @@ export default function FormEquipe() {
   }
 
   return (
-    <form action={acao} className="space-y-3">
+    <form key={JSON.stringify(estado?.valores ?? {})} action={acao} className="space-y-3">
       {estado?.erro && estado !== dispensado && <Mensagem tipo="erro">{estado.erro}</Mensagem>}
-      <Campo rotulo="Nome" name="nome" required minLength={2} maxLength={120} autoComplete="off" />
-      <Campo rotulo="E-mail" name="email" type="email" required autoComplete="off" />
+      <Campo rotulo="Nome" name="nome" required minLength={2} maxLength={120} autoComplete="off" defaultValue={estado?.valores?.nome} />
+      <Campo rotulo="E-mail" name="email" type="email" required autoComplete="off" defaultValue={estado?.valores?.email} />
       <label className="block">
         <span className="text-sm font-medium text-stone-700">Perfil</span>
         <select
           name="perfil"
           required
-          defaultValue=""
+          defaultValue={estado?.valores?.perfil ?? ""}
           className="mt-1 block w-full rounded-lg border border-stone-300 bg-white px-3 py-2.5 text-base text-stone-900 outline-none focus:border-rose-600 focus:ring-2 focus:ring-rose-200"
         >
           <option value="" disabled>Escolha...</option>

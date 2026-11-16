@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 import { Suspense } from "react";
-import { sair } from "@/app/acoes";
+import { Cabecalho } from "@/components/cabecalho";
 import {
   buscarMeuSalao,
   dataHoraBrasil,
@@ -56,19 +56,7 @@ async function Painel() {
 
   return (
     <div className="flex flex-1 flex-col bg-stone-100">
-      <header className="border-b border-stone-200 bg-white">
-        <div className="mx-auto flex max-w-3xl items-center justify-between gap-4 px-4 py-3">
-          <div className="min-w-0">
-            <p className="truncate font-semibold text-stone-900">{salao.nome}</p>
-            <p className="text-xs text-stone-500">{NOME_PERFIL[salao.perfil]}</p>
-          </div>
-          <form action={sair}>
-            <button className="rounded-lg px-3 py-2 text-sm font-medium text-stone-700 ring-1 ring-stone-300 hover:bg-stone-50">
-              Sair
-            </button>
-          </form>
-        </div>
-      </header>
+      <Cabecalho salao={salao} atual="/painel" />
 
       <main className="mx-auto w-full max-w-3xl flex-1 space-y-6 px-4 py-6">
         <section className={cartao}>

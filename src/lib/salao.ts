@@ -8,7 +8,17 @@ export const NOME_PERFIL: Record<Perfil, string> = {
   profissional: "Profissional",
 };
 
-export type MeuSalao = { salaoId: string; nome: string; perfil: Perfil };
+export type MeuSalao = { salaoId: string; nome: string; perfil: Perfil; trocarSenha: boolean };
+
+export type MembroEquipe = {
+  id: string;
+  user_id: string;
+  nome: string | null;
+  email: string;
+  perfil: Perfil;
+  ativo: boolean;
+  trocar_senha: boolean;
+};
 
 /**
  * Salão do usuário logado. A RLS garante que só vêm salões dele.
@@ -17,7 +27,7 @@ export type MeuSalao = { salaoId: string; nome: string; perfil: Perfil };
 export async function buscarMeuSalao(supabase: SupabaseClient, userId: string): Promise<MeuSalao | null> {
   const { data } = await supabase
     .from("usuarios_salao")
-    .select("salao_id, perfil, criado_em, saloes(nome)")
+    .select("salao_id, perfil, trocar_senha, criado_em, saloes(nome)")
     .eq("user_id", userId)
     .eq("ativo", true)
     .order("criado_em", { ascending: true })
@@ -26,7 +36,12 @@ export async function buscarMeuSalao(supabase: SupabaseClient, userId: string): 
 
   if (!data) return null;
   const salao = data.saloes as unknown as { nome: string } | null;
-  return { salaoId: data.salao_id, nome: salao?.nome ?? "", perfil: data.perfil as Perfil };
+  return {
+    salaoId: data.salao_id,
+    nome: salao?.nome ?? "",
+    perfil: data.perfil as Perfil,
+    trocarSenha: Boolean(data.trocar_senha),
+  };
 }
 
 export type RegistroAuditoria = {
@@ -48,9 +63,17 @@ export function descreverAuditoria(r: RegistroAuditoria): string {
   }
   if (r.entidade === "usuarios_salao") {
     const perfil = NOME_PERFIL[(r.depois?.perfil ?? r.antes?.perfil) as Perfil] ?? "";
-    if (r.acao === "insert") return `Pessoa adicionada à equipe como ${perfil}`;
-    if (r.acao === "delete") return `Pessoa removida da equipe (era ${perfil})`;
-    return `Acesso de pessoa da equipe alterado para ${perfil}`;
+    const nome = (r.depois?.nome ?? r.antes?.nome) as string | null | undefined;
+    const quem = nome ? nome : "uma pessoa";
+    if (r.acao === "insert" && !nome && (r.depois?.perfil as string) === "dono") return "Dono(a) do salão cadastrado(a)";
+    if (r.acao === "insert" && !nome) return `Pessoa adicionada à equipe como ${perfil}`;
+    if (r.acao === "insert") return `${quem} adicionado(a) à equipe como ${perfil}`;
+    if (r.acao === "delete") return `${quem} removido(a) da equipe (era ${perfil})`;
+    if (r.antes?.ativo === true && r.depois?.ativo === false) return `Acesso de ${quem} retirado`;
+    if (r.antes?.ativo === false && r.depois?.ativo === true) return `Acesso de ${quem} devolvido`;
+    if (r.antes?.trocar_senha === true && r.depois?.trocar_senha === false)
+      return `${quem} trocou a senha provisória`;
+    return `Acesso de ${quem} alterado (${perfil})`;
   }
   return `${r.acao} em ${r.entidade}`;
 }

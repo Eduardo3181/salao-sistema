@@ -22,6 +22,9 @@
 - Endereço de teste publicado na Vercel: https://salao-sistema-olive.vercel.app (projeto `salao-sistema`, separado do projeto antigo `espaco-persona`). Publica sozinho a cada envio para o GitHub. Na Vercel só ficam a URL do Supabase e a chave pública; a senha do banco nunca vai para lá.
 - Login por e-mail e senha (mínimo 8 caracteres), com confirmação de e-mail obrigatória. Depois do primeiro login a pessoa cadastra o salão e vira dona. Por enquanto cada pessoa usa um salão só (troca de salão fica para depois).
 - O Supabase grátis envia poucos e-mails por hora e, sem um serviço de e-mail próprio (SMTP), só entrega para e-mails da equipe do projeto. Antes do piloto: configurar SMTP próprio e traduzir os modelos de e-mail para português.
+- **Acesso da equipe por senha provisória** (decisão da dona, 16/11/2026): o dono cadastra nome, e-mail e perfil; o sistema cria a conta e mostra a senha provisória uma única vez; a pessoa é obrigada a criar a própria senha no primeiro acesso. Convite por e-mail fica para quando houver serviço de e-mail próprio (SMTP).
+- Criar a conta de alguém da equipe usa a chave secreta do Supabase (`SUPABASE_SECRET_KEY`), só no servidor (`src/lib/supabase/admin.ts`, protegido com `server-only`). A ligação da pessoa ao salão é feita como o dono, para o banco conferir a permissão e registrar na auditoria.
+- Tirar o acesso não apaga nada: marca a pessoa como inativa e ela deixa de ver o salão na hora. O acesso do dono não pode ser tirado pela tela.
 - Perfis de acesso: `dono`, `recepcao`, `profissional`. Plano e status do salão só o sistema altera; o dono altera só o nome. Auditoria é escrita por gatilhos do banco e ninguém apaga.
 - Plano pago do Supabase (backup diário) assim que houver dado real de cliente. Estimativa: cerca de US$ 45/mês somando Supabase Pro e Vercel Pro (conferir preços e termos de uso comercial).
 - Novo projeto do zero; código antigo só como referência.

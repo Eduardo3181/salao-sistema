@@ -18,6 +18,7 @@ const db = new Client({ connectionString: dbUrl });
 const usuarioA = randomUUID(); // dono do Salão A
 const usuarioB = randomUUID(); // dono do Salão B
 const usuarioC = randomUUID(); // recepção do Salão A
+const usuarioD = randomUUID(); // pessoa nova, adicionada à equipe nos testes
 let salaoA = "";
 let salaoB = "";
 
@@ -56,7 +57,7 @@ beforeAll(async () => {
   await db.connect();
   await db.query("begin");
 
-  for (const id of [usuarioA, usuarioB, usuarioC]) {
+  for (const id of [usuarioA, usuarioB, usuarioC, usuarioD]) {
     await db.query(
       "insert into auth.users (id, aud, role, email) values ($1, 'authenticated', 'authenticated', $2)",
       [id, `teste-${id}@exemplo.test`],
@@ -200,5 +201,116 @@ describe("Auditoria", () => {
     await como(usuarioA);
     await deveFalhar("delete from public.audit_log");
     await deveFalhar("update public.audit_log set acao = 'x'");
+  });
+});
+
+describe("Equipe", () => {
+  let membroD = "";
+
+  it("o dono do Salão B não consegue colocar alguém no Salão A", async () => {
+    await como(usuarioB);
+    await deveFalhar(
+      "select public.adicionar_membro($1, $2, 'recepcao', 'Intrusa', true)",
+      [salaoA, usuarioD],
+    );
+  });
+
+  it("a recepção não consegue adicionar pessoas", async () => {
+    await como(usuarioC);
+    await deveFalhar(
+      "select public.adicionar_membro($1, $2, 'profissional', 'Fulana', true)",
+      [salaoA, usuarioD],
+    );
+  });
+
+  it("ninguém consegue ser adicionado como dono por aqui", async () => {
+    await como(usuarioA);
+    await deveFalhar("select public.adicionar_membro($1, $2, 'dono', 'Fulana', true)", [salaoA, usuarioD]);
+  });
+
+  it("o dono adiciona uma profissional com senha provisória", async () => {
+    await como(usuarioA);
+    membroD = (
+      await db.query("select public.adicionar_membro($1, $2, 'profissional', 'Profissional D', true) as id", [
+        salaoA,
+        usuarioD,
+      ])
+    ).rows[0].id;
+    expect(membroD).toBeTruthy();
+
+    await como(usuarioD);
+    const { rows } = await db.query("select id from public.saloes");
+    expect(rows.map((r) => r.id)).toEqual([salaoA]);
+  });
+
+  it("a auditoria registra quem adicionou a pessoa", async () => {
+    await como(usuarioA);
+    const { rows } = await db.query(
+      "select user_id from public.audit_log where entidade = 'usuarios_salao' and entidade_id = $1",
+      [membroD],
+    );
+    expect(rows).toEqual([{ user_id: usuarioA }]);
+  });
+
+  it("só o dono do salão vê a lista da equipe com e-mails", async () => {
+    await como(usuarioA);
+    const dono = await db.query("select email from public.equipe_do_salao($1)", [salaoA]);
+    expect(dono.rows.length).toBe(3); // dono, recepção e profissional
+
+    await como(usuarioB); // dono de OUTRO salão
+    const outro = await db.query("select email from public.equipe_do_salao($1)", [salaoA]);
+    expect(outro.rows).toEqual([]);
+
+    await como(usuarioC); // recepção do mesmo salão
+    const recepcao = await db.query("select email from public.equipe_do_salao($1)", [salaoA]);
+    expect(recepcao.rows).toEqual([]);
+  });
+
+  it("a pessoa conclui a troca da senha provisória", async () => {
+    await como(usuarioD);
+    await db.query("select public.concluir_troca_senha()");
+    await comoAdmin();
+    const { rows } = await db.query("select trocar_senha from public.usuarios_salao where id = $1", [membroD]);
+    expect(rows[0].trocar_senha).toBe(false);
+  });
+
+  it("o dono de outro salão e a recepção não tiram o acesso de ninguém", async () => {
+    await como(usuarioB);
+    await deveFalhar("select public.definir_acesso_membro($1, false)", [membroD]);
+    await como(usuarioC);
+    await deveFalhar("select public.definir_acesso_membro($1, false)", [membroD]);
+  });
+
+  it("o acesso do dono não pode ser tirado", async () => {
+    await comoAdmin();
+    const { rows } = await db.query(
+      "select id from public.usuarios_salao where salao_id = $1 and perfil = 'dono'",
+      [salaoA],
+    );
+    await como(usuarioA);
+    await deveFalhar("select public.definir_acesso_membro($1, false)", [rows[0].id]);
+  });
+
+  it("quem perde o acesso deixa de ver o salão na hora", async () => {
+    await como(usuarioA);
+    await db.query("select public.definir_acesso_membro($1, false)", [membroD]);
+
+    await como(usuarioD);
+    const saloes = await db.query("select id from public.saloes");
+    expect(saloes.rows).toEqual([]);
+    const equipe = await db.query("select id from public.usuarios_salao");
+    expect(equipe.rows).toEqual([]);
+  });
+
+  it("procurar conta por e-mail é só para o servidor", async () => {
+    await como(usuarioA);
+    await deveFalhar("select public.id_usuario_por_email($1)", [`teste-${usuarioB}@exemplo.test`]);
+
+    await db.query("reset role");
+    await db.query("set local role service_role");
+    const { rows } = await db.query("select public.id_usuario_por_email($1) as id", [
+      `TESTE-${usuarioB}@exemplo.test`,
+    ]);
+    expect(rows[0].id).toBe(usuarioB);
   });
 });

@@ -1,10 +1,11 @@
 "use server";
 
+import { revalidatePath } from "next/cache";
 import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 import { criarClienteSupabase } from "@/lib/supabase/server";
 
-export type EstadoForm = { erro?: string; aviso?: string; email?: string } | undefined;
+export type EstadoForm = { erro?: string; aviso?: string; email?: string; concluido?: boolean } | undefined;
 
 const EMAIL_VALIDO = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
@@ -59,13 +60,43 @@ export async function entrar(_: EstadoForm, form: FormData): Promise<EstadoForm>
   const { error } = await supabase.auth.signInWithPassword({ email, password: senha });
   if (error) return { erro: traduzirErro(error.message), email };
 
+  revalidatePath("/", "layout");
   redirect("/painel");
 }
 
 export async function sair() {
   const supabase = await criarClienteSupabase();
   await supabase.auth.signOut();
+  revalidatePath("/", "layout");
   redirect("/entrar");
+}
+
+export async function trocarSenha(_: EstadoForm, form: FormData): Promise<EstadoForm> {
+  const senha = form.get("senha");
+  const confirmacao = form.get("confirmacao");
+  if (typeof senha !== "string" || senha.length < 8)
+    return { erro: "A senha precisa ter pelo menos 8 caracteres." };
+  if (senha !== confirmacao) return { erro: "As duas senhas não são iguais." };
+
+  const supabase = await criarClienteSupabase();
+  const { data: usuario } = await supabase.auth.getUser();
+  if (!usuario?.user) redirect("/auth/sair");
+
+  const { error } = await supabase.auth.updateUser({ password: senha });
+  if (error) {
+    console.error("trocarSenha falhou:", error.code);
+    if (error.code === "same_password") return { erro: "A nova senha precisa ser diferente da provisória." };
+    return { erro: traduzirErro(error.message) };
+  }
+
+  const { error: erroConcluir } = await supabase.rpc("concluir_troca_senha");
+  if (erroConcluir) {
+    console.error("trocarSenha: concluir falhou", erroConcluir.code);
+    return { erro: "A senha foi trocada, mas não conseguimos liberar o acesso. Tente entrar de novo." };
+  }
+  revalidatePath("/", "layout");
+  // O formulário recarrega a página inteira ao receber "concluido" (evita tela antiga guardada).
+  return { concluido: true };
 }
 
 export async function cadastrarSalao(_: EstadoForm, form: FormData): Promise<EstadoForm> {
@@ -83,5 +114,6 @@ export async function cadastrarSalao(_: EstadoForm, form: FormData): Promise<Est
     return { erro: "Não foi possível cadastrar o salão. Tente de novo." };
   }
 
+  revalidatePath("/", "layout");
   redirect("/painel");
 }

@@ -13,7 +13,10 @@ export default function FormEntrar() {
   return (
     <form action={acao} className="space-y-4">
       {linkInvalido && !estado && (
-        <Mensagem tipo="erro">O link de confirmação expirou ou já foi usado. Tente entrar com seu e-mail e senha.</Mensagem>
+        <Mensagem tipo="aviso">
+          Este link já foi usado. Se você acabou de confirmar o e-mail, sua conta provavelmente já está ativa: é só entrar
+          com seu e-mail e senha.
+        </Mensagem>
       )}
       {estado?.erro && <Mensagem tipo="erro">{estado.erro}</Mensagem>}
       <Campo rotulo="E-mail" name="email" type="email" autoComplete="email" required defaultValue={estado?.email} />

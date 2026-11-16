@@ -7,11 +7,18 @@ Cada etapa só termina quando a dona consegue testar na tela e os testes automá
 - Criar contas: GitHub, Supabase, Vercel.
 - Conversa com o contador (SLU, imposto, pró-labore, prefeitura).
 
-## Etapa 1: fundação
+## Etapa 1: fundação (concluída em 16/11/2026)
 - Projeto criado e publicado com endereço de teste.
 - Cadastro do salão, login e perfis de acesso.
 - Banco com RLS e **teste automático que prova o isolamento entre dois salões**.
 - Registro de auditoria funcionando.
+
+Pendências anotadas na Etapa 1 (antes do piloto, salvo indicação):
+- Serviço de e-mail próprio (SMTP) e modelos de e-mail do Supabase em português.
+- Convite da equipe por e-mail (hoje é por senha provisória).
+- Apagar a chave secreta "default" do Supabase, que não é usada (a usada é a "site").
+- Quem perdeu o acesso e entra de novo cai em "Cadastre o seu salão"; mostrar um aviso mais claro.
+- Projeto Supabase de produção em São Paulo e planos pagos (Supabase e Vercel) antes de dados reais.
 
 ## Etapa 2: cadastros
 - Serviços com categorias, profissionais e assistentes, clientes.

@@ -17,7 +17,7 @@ describe("Registro de atividades em português", () => {
   it("descreve a entrada de alguém na equipe com o perfil", () => {
     expect(
       descreverAuditoria({ ...base, entidade: "usuarios_salao", depois: { perfil: "recepcao" } }),
-    ).toBe("Pessoa adicionada à equipe (Recepção)");
+    ).toBe("Pessoa adicionada à equipe como Recepção");
   });
 });
 

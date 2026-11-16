@@ -48,9 +48,9 @@ export function descreverAuditoria(r: RegistroAuditoria): string {
   }
   if (r.entidade === "usuarios_salao") {
     const perfil = NOME_PERFIL[(r.depois?.perfil ?? r.antes?.perfil) as Perfil] ?? "";
-    if (r.acao === "insert") return `Pessoa adicionada à equipe (${perfil})`;
-    if (r.acao === "delete") return `Pessoa removida da equipe (${perfil})`;
-    return `Acesso de pessoa da equipe alterado (${perfil})`;
+    if (r.acao === "insert") return `Pessoa adicionada à equipe como ${perfil}`;
+    if (r.acao === "delete") return `Pessoa removida da equipe (era ${perfil})`;
+    return `Acesso de pessoa da equipe alterado para ${perfil}`;
   }
   return `${r.acao} em ${r.entidade}`;
 }

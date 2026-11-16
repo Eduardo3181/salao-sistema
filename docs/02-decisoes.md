@@ -19,6 +19,7 @@
 - Pasta do projeto: `C:\Projetos\salao`, fora do OneDrive (a sincronização trava com os arquivos do projeto).
 - Projeto Supabase de **teste**: `salao-sistema-teste`, criado na região **us-east-1 (EUA)**. Só pode ter dados de mentira. O projeto de **produção** deve ser criado em **São Paulo (sa-east-1)**, por LGPD e velocidade (a região não muda depois).
 - Migrações e testes rodam contra o projeto de teste (caminho escolhido pela dona, sem Docker). O endereço do banco com senha fica só no `.env.local`. Comandos: `npm run db:push` (aplica migrações) e `npm test` (testes; desfazem tudo no final).
+- Endereço de teste publicado na Vercel: https://salao-sistema-olive.vercel.app (projeto `salao-sistema`, separado do projeto antigo `espaco-persona`). Publica sozinho a cada envio para o GitHub. Na Vercel só ficam a URL do Supabase e a chave pública; a senha do banco nunca vai para lá.
 - Login por e-mail e senha (mínimo 8 caracteres), com confirmação de e-mail obrigatória. Depois do primeiro login a pessoa cadastra o salão e vira dona. Por enquanto cada pessoa usa um salão só (troca de salão fica para depois).
 - O Supabase grátis envia poucos e-mails por hora e, sem um serviço de e-mail próprio (SMTP), só entrega para e-mails da equipe do projeto. Antes do piloto: configurar SMTP próprio e traduzir os modelos de e-mail para português.
 - Perfis de acesso: `dono`, `recepcao`, `profissional`. Plano e status do salão só o sistema altera; o dono altera só o nome. Auditoria é escrita por gatilhos do banco e ninguém apaga.

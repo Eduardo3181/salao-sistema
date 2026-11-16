@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Link from "next/link";
 import { redirect } from "next/navigation";
 import { Suspense } from "react";
 import { Cabecalho } from "@/components/cabecalho";
@@ -50,6 +51,10 @@ async function Painel() {
     : [{ data: null }, { data: null }];
 
   const membros = (equipe ?? []) as MembroEquipe[];
+  const temServicos = ehDono
+    ? ((await supabase.from("servicos").select("id", { count: "exact", head: true }).eq("salao_id", salao.salaoId))
+        .count ?? 0) > 0
+    : false;
   const nomePorUsuario = new Map(membros.map((m) => [m.user_id, m.nome ?? m.email]));
   const autor = (id: string | null) =>
     id === userId ? "por você" : id && nomePorUsuario.get(id) ? `por ${nomePorUsuario.get(id)}` : "pelo sistema";
@@ -61,15 +66,44 @@ async function Painel() {
       <main className="mx-auto w-full max-w-3xl flex-1 space-y-6 px-4 py-6">
         <section className={cartao}>
           <h1 className="text-xl font-semibold text-stone-900">Bem-vindo(a)!</h1>
-          <p className="mt-2 text-stone-600">
-            Agenda, comanda, comissões e caixa vão aparecer aqui nas próximas etapas.
-          </p>
+          {ehDono ? (
+            <>
+              <p className="mt-2 text-stone-600">
+                Primeiros passos. Nenhum é obrigatório: faça na ordem que quiser e volte quando precisar.
+              </p>
+              <ol className="mt-4 space-y-2">
+                <PassoInicial
+                  feito={temServicos}
+                  href="/servicos"
+                  titulo="Cadastrar os serviços"
+                  detalhe="Nome, duração e preço de cada serviço."
+                />
+                <PassoInicial
+                  titulo="Cadastrar quem atende"
+                  detalhe="Profissionais e assistentes, sem precisar de e-mail. Em breve."
+                />
+                <PassoInicial
+                  feito={membros.length > 1}
+                  href="#equipe"
+                  titulo="Dar acesso à equipe (opcional)"
+                  detalhe="Só para quem precisa entrar no sistema, como a recepção."
+                />
+              </ol>
+            </>
+          ) : (
+            <p className="mt-2 text-stone-600">
+              Use o menu acima. Agenda, comanda, comissões e caixa vão aparecer aqui nas próximas etapas.
+            </p>
+          )}
         </section>
 
         {ehDono && (
-          <section className={cartao}>
-            <h2 className="font-semibold text-stone-900">Equipe</h2>
-            <p className="mt-1 text-sm text-stone-500">Quem tem acesso ao sistema do salão.</p>
+          <section id="equipe" className={`${cartao} scroll-mt-4`}>
+            <h2 className="font-semibold text-stone-900">Equipe com acesso ao sistema</h2>
+            <p className="mt-1 text-sm text-stone-500">
+              Opcional. Adicione só quem precisa entrar no sistema (ex.: recepcionista). Quem só atende
+              não precisa de acesso. Salão com uma pessoa só não precisa adicionar ninguém.
+            </p>
 
             <ul className="mt-4 divide-y divide-stone-100">
               {membros.map((m) => (
@@ -97,8 +131,7 @@ async function Painel() {
               ))}
             </ul>
 
-            <div className="mt-6 border-t border-stone-100 pt-5">
-              <h3 className="mb-3 text-sm font-semibold text-stone-900">Adicionar pessoa</h3>
+            <div className="mt-4 border-t border-stone-100 pt-4">
               <FormEquipe />
             </div>
           </section>
@@ -122,5 +155,39 @@ async function Painel() {
         )}
       </main>
     </div>
+  );
+}
+
+/** Um item da lista de primeiros passos (com link quando já está disponível). */
+function PassoInicial({ titulo, detalhe, href, feito }: { titulo: string; detalhe: string; href?: string; feito?: boolean }) {
+  const conteudo = (
+    <div className="flex items-start gap-3">
+      <span
+        aria-hidden
+        className={`mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full text-xs font-bold ${
+          feito ? "bg-emerald-600 text-white" : "ring-1 ring-stone-300 text-transparent"
+        }`}
+      >
+        ✓
+      </span>
+      <span className="min-w-0">
+        <span className={`block text-sm font-medium ${href ? "text-rose-800" : "text-stone-500"}`}>
+          {titulo}
+          {feito && <span className="sr-only"> (feito)</span>}
+        </span>
+        <span className="block text-xs text-stone-500">{detalhe}</span>
+      </span>
+    </div>
+  );
+  return (
+    <li>
+      {href ? (
+        <Link href={href} className="block rounded-lg p-2 hover:bg-stone-50">
+          {conteudo}
+        </Link>
+      ) : (
+        <div className="p-2">{conteudo}</div>
+      )}
+    </li>
   );
 }

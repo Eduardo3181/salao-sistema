@@ -41,3 +41,4 @@
 - Ideia para depois (não pedida ainda): usar o mesmo tipo de chave para "Recepção pode alterar preços".
 - Importação por planilha: construída e testada só com dados de mentira; clientes reais só no banco de produção (São Paulo).
 - Nada é apagado nos cadastros: itens ficam inativos, para não alterar comandas e relatórios antigos.
+- **Equipe ≠ Profissionais** (pedido da dona após teste, 16/11/2026): "Equipe" é só quem precisa entrar no sistema (opcional; salão de uma pessoa não adiciona ninguém). "Profissionais" é o cadastro de quem atende (agenda e comissão), sem exigir e-mail; a dona pode se cadastrar como profissional. Nada no primeiro acesso é obrigatório além de cadastrar o salão: o painel mostra "Primeiros passos" opcionais, para quem está testando não ficar presa.

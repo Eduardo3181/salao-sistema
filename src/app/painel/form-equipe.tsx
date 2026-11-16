@@ -7,6 +7,7 @@ import { adicionarPessoa } from "./acoes-equipe";
 export default function FormEquipe() {
   const [estado, acao, carregando] = useActionState(adicionarPessoa, undefined);
   const [dispensado, setDispensado] = useState<typeof estado>(undefined); // aviso que já foi fechado
+  const [aberto, setAberto] = useState(false); // o formulário só aparece quando a pessoa pede
 
   if (estado?.sucesso && estado !== dispensado) {
     const s = estado.sucesso;
@@ -37,12 +38,27 @@ export default function FormEquipe() {
         )}
         <button
           type="button"
-          onClick={() => setDispensado(estado)}
+          onClick={() => {
+            setDispensado(estado);
+            setAberto(false);
+          }}
           className="text-sm font-semibold text-emerald-800 hover:underline"
         >
-          Já anotei. Adicionar outra pessoa
+          Já anotei, fechar
         </button>
       </div>
+    );
+  }
+
+  if (!aberto) {
+    return (
+      <button
+        type="button"
+        onClick={() => setAberto(true)}
+        className="rounded-lg px-4 py-2 text-sm font-semibold text-rose-700 ring-1 ring-rose-200 hover:bg-rose-50"
+      >
+        + Adicionar pessoa
+      </button>
     );
   }
 
@@ -65,6 +81,9 @@ export default function FormEquipe() {
         </select>
       </label>
       <Botao type="submit" carregando={carregando}>Adicionar à equipe</Botao>
+      <button type="button" onClick={() => { setDispensado(estado); setAberto(false); }} className="block w-full text-center text-sm font-semibold text-stone-600 hover:underline">
+        Cancelar
+      </button>
     </form>
   );
 }

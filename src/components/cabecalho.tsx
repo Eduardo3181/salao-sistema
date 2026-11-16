@@ -5,6 +5,7 @@ import { NOME_PERFIL, type MeuSalao } from "@/lib/salao";
 const LINKS = [
   { href: "/painel", rotulo: "Início" },
   { href: "/servicos", rotulo: "Serviços" },
+  { href: "/profissionais", rotulo: "Quem atende" },
 ] as const;
 
 /** Cabeçalho das páginas internas: nome do salão, perfil, menu e Sair. */

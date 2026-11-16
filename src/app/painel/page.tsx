@@ -51,6 +51,10 @@ async function Painel() {
     : [{ data: null }, { data: null }];
 
   const membros = (equipe ?? []) as MembroEquipe[];
+  const temProfissionais = ehDono
+    ? ((await supabase.from("profissionais").select("id", { count: "exact", head: true }).eq("salao_id", salao.salaoId))
+        .count ?? 0) > 0
+    : false;
   const temServicos = ehDono
     ? ((await supabase.from("servicos").select("id", { count: "exact", head: true }).eq("salao_id", salao.salaoId))
         .count ?? 0) > 0
@@ -79,8 +83,10 @@ async function Painel() {
                   detalhe="Nome, duração e preço de cada serviço."
                 />
                 <PassoInicial
+                  feito={temProfissionais}
+                  href="/profissionais"
                   titulo="Cadastrar quem atende"
-                  detalhe="Profissionais e assistentes, sem precisar de e-mail. Em breve."
+                  detalhe="Profissionais e assistentes, sem precisar de e-mail. Se você atende, cadastre-se também."
                 />
                 <PassoInicial
                   feito={membros.length > 1}

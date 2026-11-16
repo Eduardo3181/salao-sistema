@@ -97,3 +97,23 @@ describe("Registro de serviços", () => {
     );
   });
 });
+
+describe("Registro de quem atende", () => {
+  const prof = { ...base, entidade: "profissionais" };
+  it("descreve cadastro, troca de tipo e desativação", () => {
+    expect(descreverAuditoria({ ...prof, depois: { nome: "Bia", tipo: "assistente" } })).toBe(
+      "Bia cadastrado(a) como assistente",
+    );
+    expect(
+      descreverAuditoria({
+        ...prof,
+        acao: "update",
+        antes: { nome: "Bia", tipo: "assistente", ativo: true, user_id: null },
+        depois: { nome: "Bia", tipo: "profissional", ativo: true, user_id: null },
+      }),
+    ).toBe("Bia: passou a profissional");
+    expect(
+      descreverAuditoria({ ...prof, acao: "update", antes: { nome: "Bia", ativo: true }, depois: { nome: "Bia", ativo: false } }),
+    ).toBe("Bia desativado(a)");
+  });
+});

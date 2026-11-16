@@ -102,6 +102,18 @@ export function descreverAuditoria(r: RegistroAuditoria): string {
     if (r.antes?.categoria_id !== r.depois?.categoria_id) mudancas.push("categoria");
     return mudancas.length ? `Serviço "${nome}": ${mudancas.join(", ")}` : `Serviço "${nome}" alterado`;
   }
+  if (r.entidade === "profissionais") {
+    const nome = r.depois?.nome ?? r.antes?.nome;
+    const tipo = (t: unknown) => (t === "assistente" ? "assistente" : "profissional");
+    if (r.acao === "insert") return `${nome} cadastrado(a) como ${tipo(r.depois?.tipo)}`;
+    if (r.antes?.ativo === true && r.depois?.ativo === false) return `${nome} desativado(a)`;
+    if (r.antes?.ativo === false && r.depois?.ativo === true) return `${nome} reativado(a)`;
+    const mudancas: string[] = [];
+    if (r.antes?.nome !== r.depois?.nome) mudancas.push(`nome de "${r.antes?.nome}" para "${r.depois?.nome}"`);
+    if (r.antes?.tipo !== r.depois?.tipo) mudancas.push(`passou a ${tipo(r.depois?.tipo)}`);
+    if (r.antes?.user_id !== r.depois?.user_id) mudancas.push(r.depois?.user_id ? "ligado(a) a uma conta" : "desligado(a) da conta");
+    return mudancas.length ? `${nome}: ${mudancas.join(", ")}` : `${nome} alterado(a)`;
+  }
   return `${r.acao} em ${r.entidade}`;
 }
 

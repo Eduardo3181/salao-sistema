@@ -34,7 +34,7 @@ Pendências anotadas na Etapa 1 (antes do piloto, salvo indicação):
 
 ### Plano da Etapa 4 (fatias)
 1. Produtos: cadastro com nome, preço e custo (sem estoque).
-2. Base no banco: comandas, itens, assistentes do item e pagamentos; travas por perfil e testes. (2a feito: comandas, itens, assistentes, desconto, exclusão com motivo; 2b: pagamentos.)
+2. Base no banco: comandas, itens, assistentes do item e pagamentos; travas por perfil e testes. (feito: comandas, itens, assistentes, desconto, exclusão com motivo, pagamentos com taxa e troco, fecha sozinha ao receber o total.)
 3. Abrir comanda: pela agenda (e sozinha ao marcar Concluído) ou nova comanda; lista de abertas.
 4. Lançar itens: serviço com valor ajustável, produto, profissional, assistente, descontos.
 5. Pagar e fechar: várias formas, troco, taxas do cartão (por número de parcelas no crédito parcelado), fecha sozinha ao receber o total; chaves nas Configurações.

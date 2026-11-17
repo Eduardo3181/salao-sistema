@@ -1,17 +1,16 @@
 "use client";
 
-import { Check, Search, UserPlus } from "lucide-react";
+import { Check, Search } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useEffect, useMemo, useState, useTransition } from "react";
+import { useMemo, useState, useTransition } from "react";
+import EscolherCliente from "@/components/escolher-cliente";
 import { Mensagem } from "@/components/ui";
 import { horariosEmSequencia, lerHora, minutosParaHora } from "@/lib/agenda";
 import { formatarDuracao, formatarReais } from "@/lib/dinheiro";
 import type { Categoria, Servico } from "@/lib/servicos";
 import {
   avisosDaMarcacao,
-  buscarClientesAgenda,
-  cadastrarClienteRapido,
   cadastrarServicoRapido,
   marcarHorario,
   type ItemMarcacao,
@@ -112,7 +111,7 @@ export default function Marcacao(p: Props) {
         {erro && <Mensagem tipo="erro">{erro}</Mensagem>}
 
         {passo === 0 && (
-          <PassoCliente
+          <EscolherCliente
             podeCadastrar={p.podeCadastrarCliente}
             escolhido={cliente}
             aoEscolher={(c) => {
@@ -289,82 +288,6 @@ export default function Marcacao(p: Props) {
   );
 }
 
-function PassoCliente({
-  podeCadastrar,
-  escolhido,
-  aoEscolher,
-}: {
-  podeCadastrar: boolean;
-  escolhido: { id: string; nome: string } | null;
-  aoEscolher: (c: { id: string; nome: string }) => void;
-}) {
-  const [busca, setBusca] = useState("");
-  const [resultado, setResultado] = useState<{ id: string; nome: string }[]>([]);
-  const [novo, setNovo] = useState(false);
-  const [nome, setNome] = useState("");
-  const [telefone, setTelefone] = useState("");
-  const [erro, setErro] = useState("");
-  const [salvando, iniciar] = useTransition();
-
-  useEffect(() => {
-    const t = setTimeout(() => buscarClientesAgenda(busca).then(setResultado), 250);
-    return () => clearTimeout(t);
-  }, [busca]);
-
-  if (novo) {
-    return (
-      <div className="space-y-3">
-        <p className="font-semibold text-stone-900">Cliente nova</p>
-        {erro && <Mensagem tipo="erro">{erro}</Mensagem>}
-        <input autoFocus value={nome} onChange={(e) => setNome(e.target.value)} placeholder="Nome" className={campo} />
-        <input value={telefone} onChange={(e) => setTelefone(e.target.value)} placeholder="Telefone com DDD (opcional)" inputMode="tel" className={campo} />
-        <div className="flex gap-2">
-          <button type="button" onClick={() => setNovo(false)} className={botaoSecundario}>Voltar à busca</button>
-          <button
-            type="button"
-            disabled={salvando}
-            className={botaoPrincipal}
-            onClick={() =>
-              iniciar(async () => {
-                const r = await cadastrarClienteRapido(nome, telefone);
-                if (!r.ok) return setErro(r.erro);
-                aoEscolher(r.dados);
-              })
-            }
-          >
-            {salvando ? "Salvando..." : "Cadastrar e continuar"}
-          </button>
-        </div>
-      </div>
-    );
-  }
-
-  return (
-    <div className="space-y-3">
-      <label className="relative block">
-        <span className="sr-only">Buscar cliente</span>
-        <Search aria-hidden className="absolute left-3 top-3.5 h-4 w-4 text-stone-400" />
-        <input autoFocus value={busca} onChange={(e) => setBusca(e.target.value)} placeholder="Buscar cliente pelo nome" className={`${campo} pl-9`} />
-      </label>
-      <ul className="max-h-80 divide-y divide-stone-100 overflow-y-auto rounded-xl ring-1 ring-stone-200">
-        {resultado.length === 0 && <li className="px-4 py-3 text-sm text-stone-500">Nenhuma cliente encontrada.</li>}
-        {resultado.map((c) => (
-          <li key={c.id}>
-            <button type="button" onClick={() => aoEscolher(c)} className={`flex w-full items-center justify-between px-4 py-3 text-left text-base hover:bg-stone-50 ${escolhido?.id === c.id ? "bg-rose-50" : ""}`}>
-              {c.nome}
-              {escolhido?.id === c.id && <Check aria-hidden className="h-4 w-4 text-rose-700" />}
-            </button>
-          </li>
-        ))}
-      </ul>
-      {podeCadastrar && (
-        <button type="button" onClick={() => { setNome(busca); setNovo(true); }} className="flex items-center gap-2 text-sm font-semibold text-rose-700 hover:underline">
-          <UserPlus aria-hidden className="h-4 w-4" /> Cadastrar cliente nova
-        </button>
-      )}
-    </div>
-  );
-}
 
 function PassoServicos({
   categorias,

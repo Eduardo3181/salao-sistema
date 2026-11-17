@@ -1,6 +1,7 @@
 "use client";
 
-import { CalendarClock, MessageCircle, X } from "lucide-react";
+import { CalendarClock, MessageCircle, Receipt, X } from "lucide-react";
+import { abrirComandaDoAgendamento } from "@/app/comandas/acoes";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState, useTransition } from "react";
@@ -34,6 +35,7 @@ type Props = {
   profissionais: { id: string; nome: string }[];
   exigirMotivo: boolean;
   voltarData: string;
+  comandaId: string | null; // comanda ativa deste agendamento, se houver
 };
 
 const SITUACOES: { valor: Situacao; cor: string }[] = [
@@ -129,6 +131,35 @@ export default function Detalhe(p: Props) {
           ))}
         </ul>
       </section>
+
+      {p.comandaId ? (
+        <Link
+          href={`/comandas/${p.comandaId}`}
+          className="flex items-center justify-center gap-2 rounded-2xl bg-white px-5 py-4 text-base font-semibold text-rose-800 shadow-sm ring-1 ring-stone-200 hover:bg-rose-50"
+        >
+          <Receipt aria-hidden className="h-5 w-5" /> Ver comanda
+        </Link>
+      ) : (
+        p.podeMexer &&
+        !cancelado &&
+        p.situacao !== "faltou" && (
+          <button
+            type="button"
+            disabled={enviando}
+            onClick={() => {
+              setErro("");
+              iniciar(async () => {
+                const r = await abrirComandaDoAgendamento(p.agendamentoId);
+                if (!r.ok) return setErro(r.erro);
+                router.push(`/comandas/${r.dados}`);
+              });
+            }}
+            className="flex w-full items-center justify-center gap-2 rounded-2xl bg-white px-5 py-4 text-base font-semibold text-rose-800 shadow-sm ring-1 ring-stone-200 hover:bg-rose-50 disabled:opacity-50"
+          >
+            <Receipt aria-hidden className="h-5 w-5" /> Abrir comanda
+          </button>
+        )
+      )}
 
       {p.podeMexer && (
         <section className="space-y-3 rounded-2xl bg-white p-5 shadow-sm ring-1 ring-stone-200">

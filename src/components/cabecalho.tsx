@@ -1,4 +1,4 @@
-import { CalendarDays, Contact, House, LogOut, Menu, Package, Scissors, Settings, Users, type LucideIcon } from "lucide-react";
+import { CalendarDays, Contact, House, LogOut, Menu, Package, Receipt, Scissors, Settings, Users, type LucideIcon } from "lucide-react";
 import Link from "next/link";
 import { sair } from "@/app/acoes";
 import { NOME_PERFIL, type MeuSalao, type Perfil } from "@/lib/salao";
@@ -12,6 +12,7 @@ const SEM_ASSISTENTE: Perfil[] = ["dono", "recepcao", "profissional"];
 export const MENU: Item[] = [
   { href: "/painel", rotulo: "Início", Icone: House, perfis: TODOS },
   { href: "/agenda", rotulo: "Agenda", Icone: CalendarDays, perfis: TODOS },
+  { href: "/comandas", rotulo: "Comandas", Icone: Receipt, perfis: SEM_ASSISTENTE },
   { href: "/clientes", rotulo: "Clientes", Icone: Users, perfis: SEM_ASSISTENTE },
   { href: "/servicos", rotulo: "Serviços", Icone: Scissors, perfis: SEM_ASSISTENTE },
   { href: "/produtos", rotulo: "Produtos", Icone: Package, perfis: SEM_ASSISTENTE },

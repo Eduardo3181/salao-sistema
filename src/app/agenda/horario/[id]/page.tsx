@@ -40,7 +40,7 @@ async function Horario({
   const { supabase, salao } = await exigirSalao();
 
   // A RLS só devolve o agendamento e os serviços que a pessoa pode ver.
-  const [{ data: ag }, { data: itensR }, { data: pode }, { data: colunas }, config] = await Promise.all([
+  const [{ data: ag }, { data: itensR }, { data: pode }, { data: colunas }, config, { data: comanda }] = await Promise.all([
     supabase.from("agendamentos").select("id, situacao, motivo_cancelamento, cliente_id, clientes(nome)").eq("id", id).maybeSingle(),
     supabase
       .from("agendamento_itens")
@@ -50,6 +50,8 @@ async function Horario({
     supabase.rpc("pode_mexer_agendamento", { p_agendamento_id: id }),
     supabase.rpc("minhas_agendas", { p_salao_id: salao.salaoId }),
     buscarConfiguracao(supabase, salao.salaoId),
+    // A RLS só devolve a comanda se a pessoa puder vê-la.
+    supabase.from("comandas").select("id").eq("agendamento_id", id).neq("situacao", "cancelada").maybeSingle(),
   ]);
   const itens = (itensR ?? []) as unknown as ItemLinha[];
   if (!ag || itens.length === 0) notFound();
@@ -99,6 +101,7 @@ async function Horario({
           profissionais={(colunas ?? []) as { id: string; nome: string }[]}
           exigirMotivo={config.exigirMotivoCancelamento}
           voltarData={voltarData}
+          comandaId={salao.perfil === "assistente" ? null : (comanda?.id ?? null)}
         />
       </main>
     </div>

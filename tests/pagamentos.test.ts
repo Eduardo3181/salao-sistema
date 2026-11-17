@@ -9,7 +9,7 @@ import { novaConexao } from "./apoio/banco";
 const { db, como, comoAdmin, deveFalhar, criarUsuario, criarSalao, colocarNaEquipe } = novaConexao();
 
 let donoA = "", donoB = "", recepcaoA = "", anaUser = "", biaUser = "";
-let salaoA = "", salaoB = "";
+let salaoA = "";
 let ana = "", bia = "";
 let corte = "", shampoo = "";
 let cliente = "";
@@ -37,7 +37,7 @@ beforeAll(async () => {
   anaUser = await criarUsuario();
   biaUser = await criarUsuario();
   salaoA = await criarSalao(donoA, "Salão A");
-  salaoB = await criarSalao(donoB, "Salão B");
+  await criarSalao(donoB, "Salão B");
   await colocarNaEquipe(salaoA, recepcaoA, "recepcao");
   await colocarNaEquipe(salaoA, anaUser, "profissional");
   await colocarNaEquipe(salaoA, biaUser, "profissional");

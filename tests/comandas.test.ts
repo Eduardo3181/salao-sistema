@@ -264,6 +264,22 @@ describe("Alterar, excluir, assistentes e desconto geral", () => {
   });
 });
 
+describe("Concluir na agenda abre a comanda sozinha", () => {
+  it("a profissional conclui o próprio horário e a comanda aparece com o serviço", async () => {
+    await como(anaUser);
+    const ag = (await db.query("select public.criar_agendamento($1, $2, $3::jsonb) as id", [
+      salaoA, cliente, JSON.stringify([{ servico_id: escova, profissional_id: ana, inicio: amanha("16:00") }]),
+    ])).rows[0].id;
+    await db.query("select public.mudar_situacao_agendamento($1, 'concluido')", [ag]);
+    const { rows } = await db.query("select id from public.comandas where agendamento_id = $1", [ag]);
+    expect(rows.length).toBe(1);
+    expect((await itensDe(rows[0].id)).map((i) => i.preco)).toEqual([5500]);
+    // concluir de novo não duplica
+    await db.query("select public.mudar_situacao_agendamento($1, 'concluido')", [ag]);
+    expect((await db.query("select id from public.comandas where agendamento_id = $1", [ag])).rows.length).toBe(1);
+  });
+});
+
 describe("Auditoria", () => {
   it("registra abertura, itens, exclusão (com motivo) e cancelamento", async () => {
     await comoAdmin();

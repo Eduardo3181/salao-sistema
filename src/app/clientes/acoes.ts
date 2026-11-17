@@ -82,6 +82,8 @@ export async function salvarConfiguracao(form: FormData) {
   const valores = {
     profissionais_editam_clientes: form.get("profissionais_editam_clientes") === "on",
     exigir_motivo_cancelamento: form.get("exigir_motivo_cancelamento") === "on",
+    profissionais_alteram_preco: form.get("profissionais_alteram_preco") === "on",
+    profissionais_recebem_pagamento: form.get("profissionais_recebem_pagamento") === "on",
   };
   // Atualiza se já existe; senão cria (o banco só deixa o dono fazer as duas coisas).
   const atualizado = await ctx.supabase

@@ -155,7 +155,19 @@ export function descreverAuditoria(
       frases.push(`profissionais ${r.depois?.profissionais_editam_clientes ? "agora podem" : "não podem mais"} cadastrar e alterar clientes`);
     if (mudou("exigir_motivo_cancelamento") && r.depois?.exigir_motivo_cancelamento !== undefined)
       frases.push(`motivo ao cancelar ${r.depois?.exigir_motivo_cancelamento ? "passa a ser exigido" : "deixa de ser exigido"}`);
+    if (mudou("profissionais_alteram_preco") && r.depois?.profissionais_alteram_preco !== undefined)
+      frases.push(`profissionais ${r.depois?.profissionais_alteram_preco ? "agora podem" : "não podem mais"} mudar preço e dar desconto na comanda`);
+    if (mudou("profissionais_recebem_pagamento") && r.depois?.profissionais_recebem_pagamento !== undefined)
+      frases.push(`profissionais ${r.depois?.profissionais_recebem_pagamento ? "agora podem" : "não podem mais"} receber pagamentos`);
     return frases.length ? `Configuração: ${frases.join("; ")}` : "Configurações do salão alteradas";
+  }
+  if (r.entidade === "taxas_cartao") {
+    const t = r.depois ?? r.antes;
+    const nome = t?.forma === "debito" ? "débito" : t?.forma === "credito_vista" ? "crédito à vista" : `crédito ${t?.parcelas}x`;
+    const pct = (v: unknown) => `${Math.floor(Number(v) / 100)},${String(Number(v) % 100).padStart(2, "0")}%`;
+    if (r.acao === "delete") return `Taxa do ${nome} removida`;
+    if (r.acao === "insert") return `Taxa do ${nome}: ${pct(r.depois?.taxa_centesimos)}`;
+    return `Taxa do ${nome}: de ${pct(r.antes?.taxa_centesimos)} para ${pct(r.depois?.taxa_centesimos)}`;
   }
   if (r.entidade === "horarios_funcionamento") {
     const linha = r.depois ?? r.antes;

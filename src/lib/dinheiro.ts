@@ -46,3 +46,20 @@ export function formatarDuracao(minutos: number): string {
   if (h === 0) return `${m}min`;
   return m === 0 ? `${h}h` : `${h}h${String(m).padStart(2, "0")}`;
 }
+
+/**
+ * Taxa em % digitada ("2,99", "3", "5.25") -> centésimos de ponto percentual (299, 300, 525).
+ * Aceita de 0 a 100, com até 2 casas. Devolve null se inválida.
+ */
+export function percentualParaCentesimos(texto: string): number | null {
+  const t = texto.trim().replace(/%$/, "").trim().replace(",", ".");
+  if (!/^\d{1,3}(\.\d{1,2})?$/.test(t)) return null;
+  const [inteiro, decimal = ""] = t.split(".");
+  const c = Number(inteiro) * 100 + Number(decimal.padEnd(2, "0"));
+  return c <= 10000 ? c : null;
+}
+
+/** 299 -> "2,99" */
+export function centesimosParaTexto(c: number): string {
+  return `${Math.floor(c / 100)},${String(c % 100).padStart(2, "0")}`;
+}

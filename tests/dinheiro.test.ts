@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { centavosParaTexto, formatarDuracao, formatarReais, reaisParaCentavos } from "@/lib/dinheiro";
+import { centesimosParaTexto, percentualParaCentesimos } from "@/lib/dinheiro";
 
 describe("Reais digitados para centavos", () => {
   it.each([
@@ -44,5 +45,23 @@ describe("Exibição", () => {
     expect(formatarDuracao(90)).toBe("1h30");
     expect(formatarDuracao(120)).toBe("2h");
     expect(formatarDuracao(65)).toBe("1h05");
+  });
+});
+
+describe("Taxa do cartão em %", () => {
+  it("converte o que a pessoa digita em centésimos, sem número quebrado", () => {
+    expect(percentualParaCentesimos("2,99")).toBe(299);
+    expect(percentualParaCentesimos("3")).toBe(300);
+    expect(percentualParaCentesimos("5.25")).toBe(525);
+    expect(percentualParaCentesimos("0,5")).toBe(50);
+    expect(percentualParaCentesimos("4,1 %")).toBe(410);
+    expect(percentualParaCentesimos("100")).toBe(10000);
+  });
+  it("recusa valores inválidos", () => {
+    for (const t of ["", "abc", "-1", "100,01", "2,999", "1.000"]) expect(percentualParaCentesimos(t)).toBeNull();
+  });
+  it("mostra de volta com vírgula", () => {
+    expect(centesimosParaTexto(299)).toBe("2,99");
+    expect(centesimosParaTexto(50)).toBe("0,50");
   });
 });

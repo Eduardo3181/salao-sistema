@@ -10,16 +10,18 @@ export type Cliente = {
   ativo: boolean;
 };
 
-/** Configurações do salão (sem linha salva = padrões: as duas chaves ligadas). */
+/** Configurações do salão (sem linha salva = padrões: chaves de clientes e motivo ligadas; as da comanda desligadas). */
 export async function buscarConfiguracao(supabase: SupabaseClient, salaoId: string) {
   const { data } = await supabase
     .from("configuracao_salao")
-    .select("profissionais_editam_clientes, exigir_motivo_cancelamento")
+    .select("profissionais_editam_clientes, exigir_motivo_cancelamento, profissionais_alteram_preco, profissionais_recebem_pagamento")
     .eq("salao_id", salaoId)
     .maybeSingle();
   return {
     profissionaisEditamClientes: data ? Boolean(data.profissionais_editam_clientes) : true,
     exigirMotivoCancelamento: data ? Boolean(data.exigir_motivo_cancelamento) : true,
+    profissionaisAlteramPreco: data ? Boolean(data.profissionais_alteram_preco) : false,
+    profissionaisRecebemPagamento: data ? Boolean(data.profissionais_recebem_pagamento) : false,
   };
 }
 

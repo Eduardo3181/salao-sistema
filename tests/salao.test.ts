@@ -237,3 +237,13 @@ describe("Registro da agenda", () => {
     ).toBe("Bloqueio: salão inteiro, 20/11 às 00:00 até 20/11 às 23:59 (Feriado)");
   });
 });
+
+describe("Histórico das taxas do cartão", () => {
+  it("descreve taxa criada, alterada e removida", () => {
+    expect(descreverAuditoria({ ...base, acao: "insert", entidade: "taxas_cartao", depois: { forma: "debito", parcelas: 1, taxa_centesimos: 199 } })).toBe("Taxa do débito: 1,99%");
+    expect(
+      descreverAuditoria({ ...base, acao: "update", entidade: "taxas_cartao", antes: { forma: "credito_parcelado", parcelas: 3, taxa_centesimos: 500 }, depois: { forma: "credito_parcelado", parcelas: 3, taxa_centesimos: 525 } }),
+    ).toBe("Taxa do crédito 3x: de 5,00% para 5,25%");
+    expect(descreverAuditoria({ ...base, acao: "delete", entidade: "taxas_cartao", depois: null, antes: { forma: "credito_vista", parcelas: 1, taxa_centesimos: 349 } })).toBe("Taxa do crédito à vista removida");
+  });
+});

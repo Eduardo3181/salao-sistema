@@ -37,7 +37,7 @@ Pendências anotadas na Etapa 1 (antes do piloto, salvo indicação):
 2. Base no banco: comandas, itens, assistentes do item e pagamentos; travas por perfil e testes. (feito: comandas, itens, assistentes, desconto, exclusão com motivo, pagamentos com taxa e troco, fecha sozinha ao receber o total.)
 3. Abrir comanda: pela agenda (e sozinha ao marcar Concluído) ou nova comanda; lista de abertas. (feito: menu Comandas, abas Abertas e Fechadas hoje, botão no horário da agenda.)
 4. Lançar itens: serviço com valor ajustável, produto, profissional, assistente, descontos. (feito.)
-5. Pagar e fechar: várias formas, troco, taxas do cartão (por número de parcelas no crédito parcelado), fecha sozinha ao receber o total; chaves nas Configurações.
+5. Pagar e fechar: várias formas, troco, taxas do cartão (por número de parcelas no crédito parcelado), fecha sozinha ao receber o total; chaves nas Configurações. (feito.)
 6. Aviso de comandas antigas, telefone visível para a profissional com comanda aberta, reabrir e excluir item com motivo.
 
 ## Etapa 5: comissões

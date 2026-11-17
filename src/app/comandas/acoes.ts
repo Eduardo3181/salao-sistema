@@ -163,3 +163,68 @@ export async function cancelarComanda(comandaId: string, motivo: string): Promis
   revalidatePath(`/comandas/${comandaId}`);
   return { ok: true, dados: null };
 }
+
+// ---------------------------------------------------------------------------
+// Pagamentos
+// ---------------------------------------------------------------------------
+const FORMAS = ["dinheiro", "pix", "debito", "credito_vista", "credito_parcelado"] as const;
+export type Forma = (typeof FORMAS)[number];
+
+/**
+ * Recebe um pagamento. "valor" é quanto abate da comanda (nunca mais do que falta).
+ * No dinheiro, "entregue" é quanto a cliente deu, para calcular o troco.
+ * A comanda fecha sozinha quando completa o total.
+ */
+export async function receberPagamento(
+  comandaId: string,
+  forma: Forma,
+  valorTexto: string,
+  parcelas: number,
+  entregueTexto: string,
+): Promise<Resposta<{ fechou: boolean; troco: number }>> {
+  if (!FORMAS.includes(forma)) return { ok: false, erro: "Escolha a forma de pagamento." };
+  const valor = lerReais(valorTexto);
+  if (valor === "erro" || valor === null || valor < 1) return { ok: false, erro: "Valor inválido. Exemplos: 80 ou 80,50." };
+  const entregue = forma === "dinheiro" ? lerReais(entregueTexto) : null;
+  if (entregue === "erro") return { ok: false, erro: "Valor entregue inválido." };
+  if (entregue !== null && entregue < valor) return { ok: false, erro: "O valor entregue é menor que o valor a pagar." };
+
+  const { supabase } = await exigirSalao();
+  const { data, error } = await supabase.rpc("registrar_pagamento", {
+    p_comanda_id: comandaId,
+    p_forma: forma,
+    p_valor: valor,
+    p_parcelas: forma === "credito_parcelado" ? parcelas : 1,
+    p_recebido: entregue,
+  });
+  if (error) {
+    console.error("receberPagamento falhou:", error.code);
+    return { ok: false, erro: erroDoBanco(error.code, error.message, "Não foi possível registrar. Tente de novo.") };
+  }
+  revalidatePath("/comandas");
+  revalidatePath(`/comandas/${comandaId}`);
+  return { ok: true, dados: { fechou: Boolean((data as { fechou: boolean }).fechou), troco: entregue !== null ? entregue - valor : 0 } };
+}
+
+export async function fecharComanda(comandaId: string): Promise<Resposta<null>> {
+  const { supabase } = await exigirSalao();
+  const { error } = await supabase.rpc("fechar_comanda", { p_comanda_id: comandaId });
+  if (error) {
+    console.error("fecharComanda falhou:", error.code);
+    return { ok: false, erro: erroDoBanco(error.code, error.message, "Não foi possível fechar. Tente de novo.") };
+  }
+  revalidatePath("/comandas");
+  revalidatePath(`/comandas/${comandaId}`);
+  return { ok: true, dados: null };
+}
+
+export async function removerPagamento(comandaId: string, pagamentoId: string, motivo: string): Promise<Resposta<null>> {
+  const { supabase } = await exigirSalao();
+  const { error } = await supabase.rpc("remover_pagamento", { p_pagamento_id: pagamentoId, p_motivo: motivo.slice(0, 200) });
+  if (error) {
+    console.error("removerPagamento falhou:", error.code);
+    return { ok: false, erro: erroDoBanco(error.code, error.message, "Não foi possível remover. Tente de novo.") };
+  }
+  revalidatePath(`/comandas/${comandaId}`);
+  return { ok: true, dados: null };
+}

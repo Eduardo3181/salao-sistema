@@ -11,6 +11,7 @@ import { buscarProfissionais } from "@/lib/profissionais";
 import { buscarCatalogo } from "@/lib/servicos";
 import { exigirSalao } from "@/lib/sessao";
 import { AcoesItem, CancelarComanda, DescontoGeral, Lancar } from "./editor";
+import { FecharSemValor, Receber, RemoverPagamento } from "./pagamento";
 
 export const metadata: Metadata = { title: "Comanda | Sistema do Salão" };
 
@@ -180,18 +181,33 @@ async function Comanda({ params }: { params: Promise<{ id: string }> }) {
             <h2 className="font-semibold text-stone-900">Pagamentos</h2>
             <ul className="divide-y divide-stone-100 rounded-xl ring-1 ring-stone-200">
               {pagamentos.map((p) => (
-                <li key={p.id} className={`flex justify-between gap-3 px-4 py-3 text-sm ${p.removido_em ? "text-stone-400 line-through" : "text-stone-800"}`}>
-                  <span>
-                    {NOME_FORMA[p.forma]}
-                    {p.forma === "credito_parcelado" ? ` em ${p.parcelas}x` : ""}
-                    {Number(p.troco_centavos) > 0 ? ` · troco ${formatarReais(Number(p.troco_centavos))}` : ""}
-                    {p.removido_em && <span className="block text-xs no-underline">Removido: {p.motivo_remocao}</span>}
+                <li key={p.id} className="flex flex-wrap justify-between gap-x-3 gap-y-1 px-4 py-3 text-sm">
+                  <span className={p.removido_em ? "text-stone-400" : "text-stone-800"}>
+                    <span className={p.removido_em ? "line-through" : ""}>
+                      {NOME_FORMA[p.forma]}
+                      {p.forma === "credito_parcelado" ? ` em ${p.parcelas}x` : ""}
+                      {Number(p.troco_centavos) > 0 ? ` · troco ${formatarReais(Number(p.troco_centavos))}` : ""}
+                    </span>
+                    {p.removido_em && <span className="block text-xs">Removido: {p.motivo_remocao}</span>}
                   </span>
-                  <span className="font-medium">{formatarReais(Number(p.valor_centavos))}</span>
+                  <span className={`font-medium ${p.removido_em ? "text-stone-400 line-through" : "text-stone-800"}`}>
+                    {formatarReais(Number(p.valor_centavos))}
+                  </span>
+                  {aberta && recepcaoOuDono && !p.removido_em && <RemoverPagamento comandaId={id} pagamentoId={p.id} />}
                 </li>
               ))}
             </ul>
           </section>
+        )}
+
+        {aberta && resumo.pode_receber && resumo.falta_centavos !== null && ativos.length > 0 &&
+          (resumo.falta_centavos > 0 ? (
+            <Receber key={resumo.falta_centavos} comandaId={id} falta={resumo.falta_centavos} />
+          ) : (
+            <FecharSemValor comandaId={id} />
+          ))}
+        {aberta && !resumo.pode_receber && verTudo && ativos.length > 0 && (
+          <p className="px-1 text-sm text-stone-500">O pagamento é recebido pela recepção ou pelo dono.</p>
         )}
 
         {aberta && recepcaoOuDono && (

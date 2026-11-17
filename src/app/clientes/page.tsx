@@ -41,11 +41,16 @@ async function Clientes({ searchParams }: { searchParams: Promise<Record<string,
       <main className="mx-auto w-full max-w-3xl flex-1 space-y-6 px-4 py-6">
         <div className="flex items-center justify-between gap-4">
           <h1 className="text-xl font-semibold text-stone-900">Clientes</h1>
-          {salao.perfil === "dono" && (
-            <Link href="/importar" className="text-sm font-semibold text-rose-700 hover:underline">
-              Importar planilha
+          <div className="flex flex-wrap justify-end gap-x-4 gap-y-1">
+            <Link href="/aniversarios" className="text-sm font-semibold text-rose-700 hover:underline">
+              Aniversariantes do mês
             </Link>
-          )}
+            {salao.perfil === "dono" && (
+              <Link href="/importar" className="text-sm font-semibold text-rose-700 hover:underline">
+                Importar planilha
+              </Link>
+            )}
+          </div>
         </div>
 
         {pode && (

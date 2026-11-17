@@ -74,3 +74,16 @@ Respostas da dona (17/11/2026):
 8. Assistente (com acesso dado pelo dono) vê a agenda das profissionais que ela ajuda; o dono escolhe quais.
 9. Horário no passado: só dono e recepção, com aviso.
 10. Aceite de WhatsApp na ficha da cliente: entra já nesta etapa (marcado por dono ou recepção, com data e histórico), para os lembretes de `docs/07-lembretes-whatsapp.md`.
+
+## Referência do Salon Soft: o que entra (decisões da dona, 17/11/2026)
+Base: `docs/referencia-salon-soft/` (só local, fora do GitHub; é referência de funções, não de visual).
+1. **Saldo da cliente (crédito/débito, "fiado"): não entra.**
+2. **Pacotes:** depois do lançamento.
+3. **Permissões:** manter os perfis (dono, recepção, profissional, assistente) e criar uma chave nova nas Configurações só quando surgir a necessidade.
+4. **Cadastro rápido de serviço** de dentro da agenda: sim (junto com a marcação de horário).
+5. **Lista de aniversariantes do mês** (só consulta): já agora.
+6. **Imprimir:** não; no lugar, baixar listas e relatórios em PDF ou planilha.
+7. **Taxas do cartão por tipo** (débito, crédito à vista, crédito parcelado): Etapa 4.
+8. **Suporte:** proposta em `docs/08-suporte.md`; perguntas da seção 9 feitas à dona.
+9. **Acesso da equipe de suporte à conta do salão:** depois do lançamento.
+Também: **alterar senha e "esqueci minha senha"** entram no MVP (segurança básica).

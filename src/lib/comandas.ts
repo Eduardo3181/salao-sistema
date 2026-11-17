@@ -22,6 +22,7 @@ export type ItemComanda = {
   tipo: "servico" | "produto";
   nome: string;
   profissional: string | null;
+  profissionalId: string | null;
   quantidade: number;
   precoTabela: number;
   precoUnitario: number;
@@ -29,6 +30,7 @@ export type ItemComanda = {
   total: number;
   removido: { em: string; motivo: string } | null;
   assistentes: string[];
+  assistenteIds: string[];
 };
 
 export type ResumoComanda = {
@@ -53,7 +55,8 @@ type LinhaItem = {
   servicos: { nome: string } | null;
   produtos: { nome: string } | null;
   profissionais: { nome: string } | null;
-  comanda_item_assistentes: { profissionais: { nome: string } | null }[];
+  profissional_id: string | null;
+  comanda_item_assistentes: { assistente_id: string; profissionais: { nome: string } | null }[];
 };
 
 /** Itens da comanda que a pessoa pode ver (a RLS esconde os itens de outras profissionais). */
@@ -61,7 +64,7 @@ export async function buscarItensComanda(supabase: SupabaseClient, comandaId: st
   const { data } = await supabase
     .from("comanda_itens")
     .select(
-      "id, tipo, quantidade, preco_tabela_centavos, preco_unitario_centavos, desconto_centavos, total_centavos, removido_em, motivo_remocao, servicos(nome), produtos(nome), profissionais(nome), comanda_item_assistentes(profissionais(nome))",
+      "id, tipo, quantidade, preco_tabela_centavos, preco_unitario_centavos, desconto_centavos, total_centavos, removido_em, motivo_remocao, profissional_id, servicos(nome), produtos(nome), profissionais(nome), comanda_item_assistentes(assistente_id, profissionais(nome))",
     )
     .eq("comanda_id", comandaId)
     .order("criado_em");
@@ -70,6 +73,7 @@ export async function buscarItensComanda(supabase: SupabaseClient, comandaId: st
     tipo: i.tipo,
     nome: (i.tipo === "servico" ? i.servicos?.nome : i.produtos?.nome) ?? "Item",
     profissional: i.profissionais?.nome ?? null,
+    profissionalId: i.profissional_id,
     quantidade: i.quantidade,
     precoTabela: Number(i.preco_tabela_centavos),
     precoUnitario: Number(i.preco_unitario_centavos),
@@ -77,6 +81,7 @@ export async function buscarItensComanda(supabase: SupabaseClient, comandaId: st
     total: Number(i.total_centavos),
     removido: i.removido_em ? { em: i.removido_em, motivo: i.motivo_remocao ?? "" } : null,
     assistentes: i.comanda_item_assistentes.map((a) => a.profissionais?.nome ?? "").filter(Boolean),
+    assistenteIds: i.comanda_item_assistentes.map((a) => a.assistente_id),
   }));
 }
 

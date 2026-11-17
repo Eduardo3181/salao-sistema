@@ -6,7 +6,11 @@ import { Cabecalho } from "@/components/cabecalho";
 import { podeVerClientes } from "@/lib/clientes";
 import { buscarItensComanda, NOME_FORMA, NOME_SITUACAO_COMANDA, quandoBrasilia, type FormaPagamento, type ResumoComanda, type SituacaoComanda } from "@/lib/comandas";
 import { formatarReais } from "@/lib/dinheiro";
+import { buscarProdutos } from "@/lib/produtos";
+import { buscarProfissionais } from "@/lib/profissionais";
+import { buscarCatalogo } from "@/lib/servicos";
 import { exigirSalao } from "@/lib/sessao";
+import { AcoesItem, CancelarComanda, DescontoGeral, Lancar } from "./editor";
 
 export const metadata: Metadata = { title: "Comanda | Sistema do Salão" };
 
@@ -31,7 +35,7 @@ async function Comanda({ params }: { params: Promise<{ id: string }> }) {
   const { supabase, salao } = await exigirSalao();
   if (salao.perfil === "assistente") redirect("/painel");
 
-  const [{ data: c }, itens, { data: resumoR }, { data: pagR }] = await Promise.all([
+  const [{ data: c }, itens, { data: resumoR }, { data: pagR }, catalogo, produtosR, equipe, { data: minhas }] = await Promise.all([
     supabase
       .from("comandas")
       .select("id, situacao, cliente_id, agendamento_id, aberta_em, fechada_em, cancelada_em, motivo_cancelamento, desconto_centavos, clientes(nome)")
@@ -40,6 +44,10 @@ async function Comanda({ params }: { params: Promise<{ id: string }> }) {
     buscarItensComanda(supabase, id),
     supabase.rpc("resumo_comanda", { p_comanda_id: id }),
     supabase.from("pagamentos").select("id, forma, valor_centavos, parcelas, troco_centavos, removido_em, motivo_remocao").eq("comanda_id", id).order("criado_em"),
+    buscarCatalogo(supabase, salao.salaoId),
+    buscarProdutos(supabase, salao.salaoId, false),
+    buscarProfissionais(supabase, salao.salaoId),
+    supabase.rpc("minhas_agendas", { p_salao_id: salao.salaoId }),
   ]);
   if (!c || !resumoR) notFound();
   const resumo = resumoR as ResumoComanda;
@@ -50,6 +58,16 @@ async function Comanda({ params }: { params: Promise<{ id: string }> }) {
   const removidos = itens.filter((i) => i.removido);
   const subtotal = ativos.reduce((s, i) => s + i.total, 0);
   const verTudo = resumo.pode_mexer;
+
+  // O que cada perfil pode fazer na tela (o banco confere tudo de novo).
+  const aberta = situacao === "aberta";
+  const recepcaoOuDono = salao.perfil === "dono" || salao.perfil === "recepcao";
+  const minhaId = salao.perfil === "profissional" ? (((minhas ?? []) as { id: string }[])[0]?.id ?? null) : null;
+  const servicos = catalogo.servicos.filter((s) => s.ativo).map((s) => ({ id: s.id, nome: s.nome, preco: Number(s.preco_centavos) }));
+  const produtos = produtosR.filter((p) => p.ativo).map((p) => ({ id: p.id, nome: p.nome, preco: p.preco_centavos }));
+  const profissionais = equipe.filter((p) => p.ativo && p.tipo === "profissional").map((p) => ({ id: p.id, nome: p.nome }));
+  const assistentes = equipe.filter((p) => p.ativo && p.tipo === "assistente").map((p) => ({ id: p.id, nome: p.nome }));
+  const podeLancar = aberta && (recepcaoOuDono || minhaId !== null);
 
   return (
     <div className="flex flex-1 flex-col bg-stone-100 pb-20 md:pb-0 md:pl-56">
@@ -87,7 +105,7 @@ async function Comanda({ params }: { params: Promise<{ id: string }> }) {
             <ul className="divide-y divide-stone-100 rounded-xl ring-1 ring-stone-200">
               {ativos.map((i) => (
                 <li key={i.id} className="flex items-start justify-between gap-3 px-4 py-3 text-sm">
-                  <span className="min-w-0">
+                  <span className="min-w-0 flex-1">
                     <span className="block font-medium text-stone-900">
                       {i.quantidade > 1 ? `${i.quantidade}× ` : ""}
                       {i.nome}
@@ -103,6 +121,16 @@ async function Comanda({ params }: { params: Promise<{ id: string }> }) {
                         {i.precoUnitario !== i.precoTabela && ` · cobrado ${formatarReais(i.precoUnitario)}`}
                         {i.desconto > 0 && ` · desconto ${formatarReais(i.desconto)}`}
                       </span>
+                    )}
+                    {aberta && (
+                      <AcoesItem
+                        comandaId={id}
+                        item={i}
+                        podeEditar={recepcaoOuDono || (minhaId !== null && i.profissionalId === minhaId)}
+                        podeAlterarPreco={resumo.pode_alterar_preco}
+                        podeExcluir={recepcaoOuDono}
+                        assistentes={assistentes}
+                      />
                     )}
                   </span>
                   <span className="shrink-0 font-medium text-stone-900">{formatarReais(i.total)}</span>
@@ -129,8 +157,21 @@ async function Comanda({ params }: { params: Promise<{ id: string }> }) {
               <div className="flex justify-between font-semibold text-rose-800"><dt>Falta receber</dt><dd>{formatarReais(resumo.falta_centavos)}</dd></div>
             )}
           </dl>
+          {aberta && verTudo && resumo.pode_alterar_preco && ativos.length > 0 && (
+            <DescontoGeral comandaId={id} atual={Number(c.desconto_centavos)} />
+          )}
           {!verTudo && (
             <p className="text-xs text-stone-500">Esta comanda tem itens de outra profissional. O total e o pagamento ficam com a recepção ou o dono.</p>
+          )}
+          {podeLancar && (
+            <Lancar
+              comandaId={id}
+              servicos={servicos}
+              produtos={produtos}
+              profissionais={profissionais}
+              minhaId={minhaId}
+              podeAlterarPreco={resumo.pode_alterar_preco}
+            />
           )}
         </section>
 
@@ -151,6 +192,12 @@ async function Comanda({ params }: { params: Promise<{ id: string }> }) {
               ))}
             </ul>
           </section>
+        )}
+
+        {aberta && recepcaoOuDono && (
+          <div className="px-1">
+            <CancelarComanda comandaId={id} />
+          </div>
         )}
 
         {removidos.length > 0 && (

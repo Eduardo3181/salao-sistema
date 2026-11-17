@@ -46,3 +46,8 @@ next-env.d.ts
 
 # arquivos temporarios da ferramenta do Supabase
 supabase/.temp/
+
+# Referência do Salon Soft: prints de produto de terceiros (e dados pessoais). Só para consulta local.
+docs/referencia-salon-soft/
+docs/referencia-salon-soft.zip
+docs/resumo.md

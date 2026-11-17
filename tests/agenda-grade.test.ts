@@ -8,6 +8,7 @@ import {
   hojeBrasilia,
   horarioComFuso,
   minutosNoDia,
+  periodoDoBloqueio,
   somarDias,
 } from "@/lib/agenda";
 
@@ -101,5 +102,34 @@ describe("Marcar horário", () => {
     expect(lerHora("09:30")).toBe(570);
     expect(lerHora("25:00")).toBeNull();
     expect(lerHora("9h")).toBeNull();
+  });
+});
+
+describe("Período do bloqueio", () => {
+  const base = { diaInteiro: true, de: "2026-12-24", ate: "2026-12-25", horaDe: "", horaAte: "" };
+
+  it("dia inteiro vai da meia-noite do primeiro dia até a meia-noite depois do último", () => {
+    expect(periodoDoBloqueio(base)).toEqual({ ok: true, inicio: "2026-12-24T00:00:00-03:00", fim: "2026-12-26T00:00:00-03:00" });
+  });
+
+  it("sem data final, vale só o dia escolhido", () => {
+    expect(periodoDoBloqueio({ ...base, ate: "" })).toEqual({ ok: true, inicio: "2026-12-24T00:00:00-03:00", fim: "2026-12-25T00:00:00-03:00" });
+  });
+
+  it("recusa data final antes da inicial e mais de 62 dias", () => {
+    expect(periodoDoBloqueio({ ...base, ate: "2026-12-23" }).ok).toBe(false);
+    expect(periodoDoBloqueio({ ...base, ate: "2027-02-23" }).ok).toBe(true); // 62 dias
+    expect(periodoDoBloqueio({ ...base, ate: "2027-02-24" }).ok).toBe(false); // 63 dias
+  });
+
+  it("algumas horas no mesmo dia", () => {
+    const horas = { ...base, diaInteiro: false, horaDe: "12:00", horaAte: "13:30" };
+    expect(periodoDoBloqueio(horas)).toEqual({ ok: true, inicio: "2026-12-24T12:00:00-03:00", fim: "2026-12-24T13:30:00-03:00" });
+    expect(periodoDoBloqueio({ ...horas, horaAte: "12:00" }).ok).toBe(false);
+    expect(periodoDoBloqueio({ ...horas, horaDe: "" }).ok).toBe(false);
+  });
+
+  it("recusa data inválida", () => {
+    expect(periodoDoBloqueio({ ...base, de: "2026-02-30" }).ok).toBe(false);
   });
 });

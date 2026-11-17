@@ -1,4 +1,4 @@
-import { ChevronLeft, ChevronRight, Plus } from "lucide-react";
+import { Ban, ChevronLeft, ChevronRight, Plus } from "lucide-react";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { Suspense } from "react";
@@ -80,6 +80,12 @@ async function Agenda({ searchParams }: { searchParams: Promise<Record<string, s
             </Link>
           )}
           <SeletorData data={data} extra={extraProf} />
+          <Link
+            href={`/agenda/bloqueios?data=${data}${escolhida ? `&prof=${escolhida.id}` : ""}`}
+            className="flex items-center gap-1.5 rounded-lg px-3 py-2 text-sm font-medium ring-1 ring-stone-300 hover:bg-white"
+          >
+            <Ban aria-hidden className="h-4 w-4" /> Bloqueios
+          </Link>
           {podeMarcar && (
             <Link
               href={`/agenda/novo?data=${data}${escolhida ? `&prof=${escolhida.id}` : ""}`}
@@ -230,9 +236,10 @@ function GradeComputador({
 
               {/* bloqueios */}
               {meusBloqueios.map((b) => (
-                <div
+                <Link
                   key={b.id}
-                  className="absolute inset-x-1 overflow-hidden rounded-md px-2 py-1 text-[11px] text-stone-600 ring-1 ring-stone-300"
+                  href={`/agenda/bloqueios?data=${data}`}
+                  className="absolute inset-x-1 z-[4] overflow-hidden rounded-md px-2 py-1 text-[11px] text-stone-600 ring-1 ring-stone-300 hover:ring-stone-500"
                   style={{
                     top: topo(b.inicio),
                     height: tamanho(b.inicio, b.fim),
@@ -241,7 +248,7 @@ function GradeComputador({
                 >
                   {b.profissionalId === null ? "Feriado" : "Bloqueado"}
                   {b.motivo ? ` · ${b.motivo}` : ""}
-                </div>
+                </Link>
               ))}
 
               {/* horários marcados */}
@@ -342,10 +349,14 @@ function ListaCelular({
             ) : l.tipo === "bloqueio" ? (
               <li key={l.bloqueio.id} className="flex gap-3">
                 <span className="w-12 pt-3 text-right text-xs text-stone-400">{minutosParaHora(l.min)}</span>
-                <div className="flex-1 rounded-xl bg-white px-4 py-3 text-sm text-stone-500 border border-dashed border-stone-300">
-                  {l.bloqueio.profissionalId === null ? "Feriado" : "Bloqueado"} até {minutosParaHora(l.bloqueio.fim)}
+                <Link
+                  href={`/agenda/bloqueios?data=${data}`}
+                  className="flex-1 rounded-xl border border-dashed border-stone-300 bg-white px-4 py-3 text-sm text-stone-500 hover:border-stone-500"
+                >
+                  {l.bloqueio.profissionalId === null ? "Feriado" : "Bloqueado"}
+                  {l.bloqueio.inicio <= 0 && l.bloqueio.fim >= 24 * 60 ? " o dia todo" : ` até ${minutosParaHora(l.bloqueio.fim)}`}
                   {l.bloqueio.motivo ? ` · ${l.bloqueio.motivo}` : ""}
-                </div>
+                </Link>
               </li>
             ) : (
               <li key={l.item.id} className="flex gap-3">

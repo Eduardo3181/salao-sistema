@@ -141,3 +141,31 @@ export function lerHora(texto: string | null | undefined): number | null {
   const [h, m] = texto.split(":").map(Number);
   return h < 24 && m < 60 ? h * 60 + m : null;
 }
+
+/**
+ * Período de um bloqueio a partir do formulário.
+ * Dia inteiro: de 00:00 do primeiro dia até 00:00 do dia seguinte ao último (no máximo 62 dias).
+ * Algumas horas: no mesmo dia, entre as duas horas.
+ */
+export function periodoDoBloqueio(p: {
+  diaInteiro: boolean;
+  de: string;
+  ate: string;
+  horaDe: string;
+  horaAte: string;
+}): { ok: true; inicio: string; fim: string } | { ok: false; erro: string } {
+  if (!dataValida(p.de)) return { ok: false, erro: "Escolha a data." };
+  if (p.diaInteiro) {
+    const ate = p.ate || p.de;
+    if (!dataValida(ate)) return { ok: false, erro: "Escolha a data final." };
+    if (ate < p.de) return { ok: false, erro: "A data final precisa ser igual ou depois da inicial." };
+    const dias = Math.round((Date.parse(ate) - Date.parse(p.de)) / 86400000) + 1;
+    if (dias > 62) return { ok: false, erro: "Um bloqueio pode ter no máximo 62 dias. Para mais tempo, crie outro." };
+    return { ok: true, inicio: horarioComFuso(p.de, 0), fim: horarioComFuso(somarDias(ate, 1), 0) };
+  }
+  const a = lerHora(p.horaDe);
+  const b = lerHora(p.horaAte);
+  if (a === null || b === null) return { ok: false, erro: "Preencha as duas horas." };
+  if (b <= a) return { ok: false, erro: "A hora final precisa ser depois da inicial." };
+  return { ok: true, inicio: horarioComFuso(p.de, a), fim: horarioComFuso(p.de, b) };
+}

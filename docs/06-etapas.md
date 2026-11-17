@@ -51,9 +51,9 @@ Pendências anotadas na Etapa 1 (antes do piloto, salvo indicação):
 - Revisão de segurança antes de cobrar.
 
 ### Plano da Etapa 3 (fatias)
-1. Horários de funcionamento (salão e profissionais), opção "exigir motivo ao cancelar" e aceite de WhatsApp na ficha.
-2. Base da agenda no banco: agendamentos, serviços do agendamento, bloqueios; travas por perfil e testes.
-3. Tela da agenda do dia com colunas por profissional.
-4. Marcar, remarcar, mudar situação e cancelar (avisos de encaixe e de horário no passado).
-5. Bloqueios e feriados na tela.
+1. Horários de funcionamento (salão e profissionais), opção "exigir motivo ao cancelar" e aceite de WhatsApp na ficha. (feito)
+2. Base da agenda no banco: agendamentos, serviços do agendamento, bloqueios; travas por perfil e testes. (feito)
+3. Tela da agenda do dia com colunas por profissional. (feito)
+4. Marcar, remarcar, mudar situação e cancelar (avisos de encaixe e de horário no passado). (feito)
+5. Bloqueios e feriados na tela (feito: tela em Agenda > Bloqueios; avisa se já há atendimentos no período, sem cancelá-los).
 6. Assistente: escolha de quais profissionais ela ajuda e visão da agenda delas.

@@ -302,6 +302,28 @@ describe("Bloqueios", () => {
     expect(rows[0].c.bloqueios).toBeGreaterThanOrEqual(1);
   });
 
+  it("apagar bloqueio segue as mesmas regras de criar", async () => {
+    const apagar = "delete from public.bloqueios where id = $1";
+    await como(anaUser);
+    const { rows } = await db.query(bloquear, [salaoA, ana, amanha("16:00"), amanha("17:00"), "Curso"]);
+    const daAna = rows[0].id;
+    await como(donoA);
+    const feriado = (await db.query("select id from public.bloqueios where profissional_id is null")).rows[0].id;
+
+    for (const quem of [biaUser, assistUser, donoB]) {
+      await como(quem);
+      expect((await db.query(apagar, [daAna])).rowCount).toBe(0);
+    }
+    for (const quem of [recepcaoA, anaUser, donoB]) {
+      await como(quem);
+      expect((await db.query(apagar, [feriado])).rowCount).toBe(0);
+    }
+    await como(anaUser);
+    expect((await db.query(apagar, [daAna])).rowCount).toBe(1);
+    await como(donoA);
+    expect((await db.query(apagar, [feriado])).rowCount).toBe(1);
+  });
+
   it("o Salão B não vê nem cria bloqueio no Salão A", async () => {
     await como(donoB);
     expect((await db.query("select id from public.bloqueios")).rows).toEqual([]);

@@ -1,12 +1,12 @@
 "use client";
 
-import { Banknote, CheckCircle2, CreditCard, QrCode, Trash2 } from "lucide-react";
+import { Banknote, CheckCircle2, CreditCard, QrCode, RotateCcw, Trash2 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useState, useTransition } from "react";
 import { Mensagem } from "@/components/ui";
 import { NOME_FORMA, type FormaPagamento } from "@/lib/comandas";
 import { centavosParaTexto, formatarReais, reaisParaCentavos } from "@/lib/dinheiro";
-import { fecharComanda, receberPagamento, removerPagamento } from "../acoes";
+import { fecharComanda, reabrirComanda, receberPagamento, removerPagamento } from "../acoes";
 
 const campo =
   "block w-full rounded-lg border border-stone-300 bg-white px-3 py-2.5 text-base text-stone-900 outline-none focus:border-rose-600 focus:ring-2 focus:ring-rose-200";
@@ -183,6 +183,51 @@ export function RemoverPagamento({ comandaId, pagamentoId }: { comandaId: string
           className="rounded-lg bg-red-700 px-4 py-2.5 text-sm font-semibold text-white hover:bg-red-800 disabled:opacity-50"
         >
           Remover pagamento
+        </button>
+      </div>
+    </div>
+  );
+}
+
+/** Reabrir comanda fechada (recepção/dono, com motivo). */
+export function ReabrirComanda({ comandaId }: { comandaId: string }) {
+  const router = useRouter();
+  const [aberto, setAberto] = useState(false);
+  const [motivo, setMotivo] = useState("");
+  const [erro, setErro] = useState<string | null>(null);
+  const [enviando, iniciar] = useTransition();
+
+  if (!aberto)
+    return (
+      <button type="button" onClick={() => setAberto(true)} className="flex items-center gap-1.5 text-sm font-semibold text-rose-700 hover:underline">
+        <RotateCcw aria-hidden className="h-4 w-4" /> Reabrir comanda
+      </button>
+    );
+  return (
+    <div className="space-y-3 rounded-xl bg-amber-50 p-4 ring-1 ring-amber-200">
+      <p className="font-semibold text-amber-900">Reabrir esta comanda?</p>
+      <p className="text-sm text-amber-900">Os pagamentos já recebidos continuam. Depois de ajustar, receba a diferença (se houver).</p>
+      {erro && <Mensagem tipo="erro">{erro}</Mensagem>}
+      <label className="block">
+        <span className="text-sm text-amber-900">Motivo (fica registrado)</span>
+        <input value={motivo} maxLength={200} placeholder="Ex.: faltou lançar um produto" onChange={(e) => setMotivo(e.target.value)} className={`${campo} mt-1`} />
+      </label>
+      <div className="flex gap-2">
+        <button type="button" onClick={() => setAberto(false)} className={botaoSecundario}>Voltar</button>
+        <button
+          type="button"
+          disabled={enviando || motivo.trim().length < 3}
+          onClick={() =>
+            iniciar(async () => {
+              const r = await reabrirComanda(comandaId, motivo);
+              if (!r.ok) return setErro(r.erro);
+              setAberto(false);
+              router.refresh();
+            })
+          }
+          className="rounded-lg bg-amber-700 px-4 py-2.5 text-sm font-semibold text-white hover:bg-amber-800 disabled:opacity-50"
+        >
+          {enviando ? "Reabrindo..." : "Reabrir comanda"}
         </button>
       </div>
     </div>

@@ -47,6 +47,8 @@ async function Comandas({ searchParams }: { searchParams: Promise<Record<string,
       : consulta.eq("situacao", "fechada").gte("fechada_em", inicioDoDia(hojeBrasilia())).order("fechada_em", { ascending: false });
   const { data } = await consulta.limit(200);
   const comandas = (data ?? []) as unknown as Linha[];
+  // Início de hoje no horário de Brasília (para marcar comandas de dias anteriores).
+  const inicioHoje = Date.parse(inicioDoDia(hojeBrasilia()));
 
   const resumo = (c: Linha) => {
     const ativos = c.comanda_itens.filter((i) => !i.removido_em);
@@ -91,7 +93,12 @@ async function Comandas({ searchParams }: { searchParams: Promise<Record<string,
                   <li key={c.id}>
                     <Link href={`/comandas/${c.id}`} className="flex items-center gap-3 px-5 py-4 hover:bg-stone-50">
                       <span className="min-w-0 flex-1">
-                        <span className="block truncate font-semibold text-stone-900">{c.clientes?.nome ?? "Cliente"}</span>
+                        <span className="flex items-center gap-2">
+                          <span className="truncate font-semibold text-stone-900">{c.clientes?.nome ?? "Cliente"}</span>
+                          {aba === "abertas" && Date.parse(c.aberta_em) < inicioHoje && (
+                            <span className="shrink-0 rounded-full bg-amber-100 px-2 py-0.5 text-xs font-medium text-amber-900">dia anterior</span>
+                          )}
+                        </span>
                         <span className="block truncate text-sm text-stone-500">
                           {aba === "abertas" ? `Aberta ${quandoBrasilia(c.aberta_em)}` : `Fechada ${quandoBrasilia(c.fechada_em!)}`}
                           {r.nomes ? ` · ${r.nomes}` : r.qtd === 0 ? " · sem itens" : ""}

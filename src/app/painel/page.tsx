@@ -1,8 +1,10 @@
+import { TriangleAlert } from "lucide-react";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { Suspense } from "react";
 import { Cabecalho } from "@/components/cabecalho";
+import { hojeBrasilia, inicioDoDia } from "@/lib/agenda";
 import {
   buscarMeuSalao,
   dataHoraBrasil,
@@ -86,6 +88,18 @@ async function Painel() {
     ? ((await supabase.from("servicos").select("id", { count: "exact", head: true }).eq("salao_id", salao.salaoId))
         .count ?? 0) > 0
     : false;
+  // Aviso: comandas abertas de dias anteriores (a RLS conta só as que a pessoa pode ver).
+  const comandasAntigas =
+    salao.perfil === "assistente"
+      ? 0
+      : ((
+          await supabase
+            .from("comandas")
+            .select("id", { count: "exact", head: true })
+            .eq("salao_id", salao.salaoId)
+            .eq("situacao", "aberta")
+            .lt("aberta_em", inicioDoDia(hojeBrasilia()))
+        ).count ?? 0);
   const nomePorUsuario = new Map(membros.map((m) => [m.user_id, m.nome ?? m.email]));
   const autor = (id: string | null) =>
     id === userId ? "por você" : id && nomePorUsuario.get(id) ? `por ${nomePorUsuario.get(id)}` : "pelo sistema";
@@ -95,6 +109,21 @@ async function Painel() {
       <Cabecalho salao={salao} atual="/painel" />
 
       <main className="mx-auto w-full max-w-3xl flex-1 space-y-6 px-4 py-6">
+        {comandasAntigas > 0 && (
+          <Link
+            href="/comandas"
+            className="flex items-center gap-3 rounded-2xl bg-amber-50 px-5 py-4 text-amber-900 shadow-sm ring-1 ring-amber-200 hover:bg-amber-100"
+          >
+            <TriangleAlert aria-hidden className="h-5 w-5 shrink-0" />
+            <span className="flex-1 text-sm">
+              <strong>
+                {comandasAntigas === 1 ? "1 comanda aberta" : `${comandasAntigas} comandas abertas`} de dias anteriores.
+              </strong>{" "}
+              Confira se falta receber ou fechar.
+            </span>
+            <span className="text-sm font-semibold">Ver</span>
+          </Link>
+        )}
         <section className={cartao}>
           <h1 className="text-xl font-semibold text-stone-900">Bem-vindo(a)!</h1>
           {ehDono ? (

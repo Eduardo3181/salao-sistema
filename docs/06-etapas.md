@@ -28,7 +28,7 @@ Pendências anotadas na Etapa 1 (antes do piloto, salvo indicação):
 ## Etapa 3: agenda (concluída em 17/11/2026)
 - Colunas por profissional, grade, bloqueios, status do atendimento.
 
-## Etapa 4: comanda e pagamento
+## Etapa 4: comanda e pagamento (concluída em 17/11/2026)
 - Lançar serviços e produtos, escolher assistente, pagar com várias formas, fechar.
 - Alerta de comandas antigas abertas.
 
@@ -38,7 +38,7 @@ Pendências anotadas na Etapa 1 (antes do piloto, salvo indicação):
 3. Abrir comanda: pela agenda (e sozinha ao marcar Concluído) ou nova comanda; lista de abertas. (feito: menu Comandas, abas Abertas e Fechadas hoje, botão no horário da agenda.)
 4. Lançar itens: serviço com valor ajustável, produto, profissional, assistente, descontos. (feito.)
 5. Pagar e fechar: várias formas, troco, taxas do cartão (por número de parcelas no crédito parcelado), fecha sozinha ao receber o total; chaves nas Configurações. (feito.)
-6. Aviso de comandas antigas, telefone visível para a profissional com comanda aberta, reabrir e excluir item com motivo.
+6. Aviso de comandas antigas, telefone visível para a profissional com comanda aberta, reabrir e excluir item com motivo. (feito.)
 
 ## Etapa 5: comissões
 - Motor de cálculo configurável com os modelos prontos e simulação.

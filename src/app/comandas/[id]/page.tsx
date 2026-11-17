@@ -11,7 +11,9 @@ import { buscarProfissionais } from "@/lib/profissionais";
 import { buscarCatalogo } from "@/lib/servicos";
 import { exigirSalao } from "@/lib/sessao";
 import { AcoesItem, CancelarComanda, DescontoGeral, Lancar } from "./editor";
-import { FecharSemValor, Receber, RemoverPagamento } from "./pagamento";
+import { FecharSemValor, ReabrirComanda, Receber, RemoverPagamento } from "./pagamento";
+import { linkWhatsApp } from "@/lib/telefone-data";
+import { MessageCircle } from "lucide-react";
 
 export const metadata: Metadata = { title: "Comanda | Sistema do Salão" };
 
@@ -36,10 +38,10 @@ async function Comanda({ params }: { params: Promise<{ id: string }> }) {
   const { supabase, salao } = await exigirSalao();
   if (salao.perfil === "assistente") redirect("/painel");
 
-  const [{ data: c }, itens, { data: resumoR }, { data: pagR }, catalogo, produtosR, equipe, { data: minhas }] = await Promise.all([
+  const [{ data: c }, itens, { data: resumoR }, { data: pagR }, catalogo, produtosR, equipe, { data: minhas }, { data: telefone }] = await Promise.all([
     supabase
       .from("comandas")
-      .select("id, situacao, cliente_id, agendamento_id, aberta_em, fechada_em, cancelada_em, motivo_cancelamento, desconto_centavos, clientes(nome)")
+      .select("id, situacao, cliente_id, agendamento_id, aberta_em, fechada_em, cancelada_em, motivo_cancelamento, reaberta_em, motivo_reabertura, desconto_centavos, clientes(nome)")
       .eq("id", id)
       .maybeSingle(),
     buscarItensComanda(supabase, id),
@@ -49,8 +51,11 @@ async function Comanda({ params }: { params: Promise<{ id: string }> }) {
     buscarProdutos(supabase, salao.salaoId, false),
     buscarProfissionais(supabase, salao.salaoId),
     supabase.rpc("minhas_agendas", { p_salao_id: salao.salaoId }),
+    // Telefone: dono/recepção sempre; profissional só com a comanda aberta e item dela (regra no banco).
+    supabase.rpc("telefone_da_comanda", { p_comanda_id: id }),
   ]);
   if (!c || !resumoR) notFound();
+  const whatsapp = linkWhatsApp((telefone as string | null) ?? null);
   const resumo = resumoR as ResumoComanda;
   const situacao = c.situacao as SituacaoComanda;
   const cliente = (c as unknown as { clientes: { nome: string } | null }).clientes?.nome ?? "Cliente";
@@ -96,6 +101,21 @@ async function Comanda({ params }: { params: Promise<{ id: string }> }) {
             {c.agendamento_id && " · veio da agenda"}
           </p>
           {c.motivo_cancelamento && <p className="text-sm text-stone-600">Motivo do cancelamento: {c.motivo_cancelamento}</p>}
+          {c.reaberta_em && (
+            <p className="text-sm text-amber-800">
+              Reaberta {quandoBrasilia(c.reaberta_em)}: {c.motivo_reabertura}
+            </p>
+          )}
+          {whatsapp && (
+            <a
+              href={whatsapp}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="mt-2 inline-flex items-center gap-1.5 rounded-lg px-3 py-2 text-sm font-semibold text-emerald-800 ring-1 ring-emerald-300 hover:bg-emerald-50"
+            >
+              <MessageCircle aria-hidden className="h-4 w-4" /> WhatsApp
+            </a>
+          )}
         </section>
 
         <section className="space-y-3 rounded-2xl bg-white p-5 shadow-sm ring-1 ring-stone-200">
@@ -213,6 +233,11 @@ async function Comanda({ params }: { params: Promise<{ id: string }> }) {
         {aberta && recepcaoOuDono && (
           <div className="px-1">
             <CancelarComanda comandaId={id} />
+          </div>
+        )}
+        {situacao === "fechada" && recepcaoOuDono && (
+          <div className="px-1">
+            <ReabrirComanda comandaId={id} />
           </div>
         )}
 

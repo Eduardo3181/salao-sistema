@@ -228,3 +228,15 @@ export async function removerPagamento(comandaId: string, pagamentoId: string, m
   revalidatePath(`/comandas/${comandaId}`);
   return { ok: true, dados: null };
 }
+
+export async function reabrirComanda(comandaId: string, motivo: string): Promise<Resposta<null>> {
+  const { supabase } = await exigirSalao();
+  const { error } = await supabase.rpc("reabrir_comanda", { p_comanda_id: comandaId, p_motivo: motivo.slice(0, 200) });
+  if (error) {
+    console.error("reabrirComanda falhou:", error.code);
+    return { ok: false, erro: erroDoBanco(error.code, error.message, "Não foi possível reabrir. Tente de novo.") };
+  }
+  revalidatePath("/comandas");
+  revalidatePath(`/comandas/${comandaId}`);
+  return { ok: true, dados: null };
+}

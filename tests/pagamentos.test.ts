@@ -214,3 +214,48 @@ describe("Isolamento entre salões", () => {
     await deveFalhar("select id from public.pagamentos");
   });
 });
+
+describe("Reabrir comanda fechada", () => {
+  it("só recepção/dono, com motivo; volta a aceitar itens e fica registrada", async () => {
+    await comoAdmin();
+    const id = (await db.query("select id from public.comandas where salao_id = $1 and situacao = 'fechada' limit 1", [salaoA])).rows[0].id;
+    await como(anaUser);
+    await deveFalhar("select public.reabrir_comanda($1, 'faltou item')", [id]);
+    await como(donoB);
+    await deveFalhar("select public.reabrir_comanda($1, 'intruso')", [id]);
+    await como(recepcaoA);
+    await deveFalhar("select public.reabrir_comanda($1, '')", [id]);
+    await db.query("select public.reabrir_comanda($1, 'Esqueceu de lançar o produto')", [id]);
+    expect(await situacao(id)).toBe("aberta");
+    await como(recepcaoA);
+    await db.query(lancar, [id, "produto", shampoo, null]);
+    await deveFalhar("select public.reabrir_comanda($1, 'de novo')", [id]); // já está aberta
+    await comoAdmin();
+    const { rows } = await db.query("select depois->>'motivo_reabertura' as m from public.audit_log where entidade = 'comandas' and entidade_id = $1 and acao = 'update'", [id]);
+    expect(rows.some((r) => r.m === "Esqueceu de lançar o produto")).toBe(true);
+  });
+});
+
+describe("Telefone da cliente na comanda", () => {
+  const tel = "select public.telefone_da_comanda($1) as t";
+  it("a profissional vê só com comanda aberta e item dela; recepção sempre; outro salão nunca", async () => {
+    await comoAdmin();
+    await db.query("update public.clientes set telefone = '11987650001' where id = $1", [cliente]);
+    const daAna = await novaComanda(recepcaoA, [["servico", corte, ana]]);
+    const daBia = await novaComanda(recepcaoA, [["servico", corte, bia]]);
+
+    await como(anaUser);
+    expect((await db.query(tel, [daAna])).rows[0].t).toBe("11987650001");
+    expect((await db.query(tel, [daBia])).rows).toEqual([{ t: null }]);
+    await como(recepcaoA);
+    expect((await db.query(tel, [daBia])).rows[0].t).toBe("11987650001");
+    await como(donoB);
+    expect((await db.query(tel, [daAna])).rows).toEqual([{ t: null }]);
+
+    // depois de fechada, a profissional não vê mais
+    await como(recepcaoA);
+    await db.query(pagar, [daAna, "pix", 10000, 1, null]);
+    await como(anaUser);
+    expect((await db.query(tel, [daAna])).rows).toEqual([{ t: null }]);
+  });
+});

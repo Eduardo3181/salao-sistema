@@ -60,8 +60,15 @@ export type RegistroAuditoria = {
 /**
  * Frase em português para um registro da auditoria.
  * nomesClientes: nome ATUAL de cada cliente (a auditoria de clientes não guarda dados pessoais).
+ * nomesProfissionais: nome de cada profissional (para a agenda e os bloqueios).
  */
-export function descreverAuditoria(r: RegistroAuditoria, nomesClientes?: Map<string, string>): string {
+export function descreverAuditoria(
+  r: RegistroAuditoria,
+  nomesClientes?: Map<string, string>,
+  nomesProfissionais?: Map<string, string>,
+): string {
+  const agenda = descreverAgenda(r, nomesClientes, nomesProfissionais);
+  if (agenda) return agenda;
   if (r.entidade === "saloes" && r.acao === "insert") return `Salão criado: "${r.depois?.nome}"`;
   if (r.entidade === "saloes" && r.acao === "update") {
     if (r.antes?.nome !== r.depois?.nome) return `Nome do salão alterado de "${r.antes?.nome}" para "${r.depois?.nome}"`;
@@ -168,4 +175,70 @@ export function dataHoraBrasil(iso: string): string {
     dateStyle: "short",
     timeStyle: "short",
   }).format(new Date(iso));
+}
+
+const SITUACAO: Record<string, string> = {
+  agendado: "agendado",
+  confirmado: "confirmado",
+  chegou: "cliente chegou",
+  concluido: "concluído",
+  faltou: "faltou",
+  cancelado: "cancelado",
+};
+const MOTIVO: Record<string, string> = {
+  cliente_desmarcou: "cliente desmarcou",
+  salao_desmarcou: "salão desmarcou",
+  outro: "outro motivo",
+};
+
+/** "2026-11-18T13:00:00+00:00" -> "18/11 às 10:00" (horário de Brasília). */
+function quando(iso: unknown): string {
+  if (typeof iso !== "string") return "";
+  const d = new Date(iso);
+  const dia = new Intl.DateTimeFormat("pt-BR", { timeZone: "America/Sao_Paulo", day: "2-digit", month: "2-digit" }).format(d);
+  const hora = new Intl.DateTimeFormat("pt-BR", { timeZone: "America/Sao_Paulo", hour: "2-digit", minute: "2-digit" }).format(d);
+  return `${dia} às ${hora}`;
+}
+
+/** Frases da agenda (agendamentos, serviços marcados, bloqueios). Devolve null se não for da agenda. */
+function descreverAgenda(
+  r: RegistroAuditoria,
+  nomesClientes?: Map<string, string>,
+  nomesProfissionais?: Map<string, string>,
+): string | null {
+  const cliente = (id: unknown) => (typeof id === "string" && nomesClientes?.get(id)) || "cliente removida";
+  const prof = (id: unknown) => (typeof id === "string" && nomesProfissionais?.get(id)) || "profissional";
+
+  if (r.entidade === "agendamentos") {
+    const nome = cliente(r.depois?.cliente_id ?? r.antes?.cliente_id);
+    if (r.acao === "insert") return `Agendamento criado para ${nome}`;
+    const s = String(r.depois?.situacao);
+    if (r.antes?.situacao !== r.depois?.situacao) {
+      const motivo = s === "cancelado" && r.depois?.motivo_cancelamento ? ` (${MOTIVO[String(r.depois.motivo_cancelamento)]})` : "";
+      return `Agendamento de ${nome}: ${SITUACAO[s] ?? s}${motivo}`;
+    }
+    return `Agendamento de ${nome} alterado`;
+  }
+  if (r.entidade === "agendamento_itens") {
+    if (r.acao === "insert") return `Horário marcado com ${prof(r.depois?.profissional_id)}: ${quando(r.depois?.inicio)}`;
+    if (r.acao === "delete") return `Horário removido: ${quando(r.antes?.inicio)}`;
+    const trocou = r.antes?.profissional_id !== r.depois?.profissional_id;
+    return `Horário remarcado de ${quando(r.antes?.inicio)} para ${quando(r.depois?.inicio)}${
+      trocou ? `, agora com ${prof(r.depois?.profissional_id)}` : ""
+    }`;
+  }
+  if (r.entidade === "bloqueios") {
+    const b = r.depois ?? r.antes;
+    const alvo = b?.profissional_id ? `agenda de ${prof(b.profissional_id)}` : "salão inteiro";
+    const motivo = b?.motivo ? ` (${b.motivo})` : "";
+    const periodo = `${quando(b?.inicio)} até ${quando(b?.fim)}`;
+    return r.acao === "delete" ? `Bloqueio removido: ${alvo}, ${periodo}` : `Bloqueio: ${alvo}, ${periodo}${motivo}`;
+  }
+  if (r.entidade === "assistentes_profissionais") {
+    const a = r.depois ?? r.antes;
+    return r.acao === "delete"
+      ? `${prof(a?.assistente_id)} não ajuda mais ${prof(a?.profissional_id)}`
+      : `${prof(a?.assistente_id)} passa a ajudar ${prof(a?.profissional_id)}`;
+  }
+  return null;
 }

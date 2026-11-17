@@ -58,13 +58,21 @@ async function Painel() {
         .map((r) =>
           r.entidade === "clientes"
             ? r.entidade_id
-            : r.entidade === "consentimentos_whatsapp"
-              ? (r.depois?.cliente_id as string | undefined)
+            : r.entidade === "consentimentos_whatsapp" || r.entidade === "agendamentos"
+              ? ((r.depois?.cliente_id ?? r.antes?.cliente_id) as string | undefined)
               : null,
         )
         .filter((id): id is string => Boolean(id)),
     ),
   ];
+  const nomesProfissionais = new Map(
+    ehDono
+      ? ((await supabase.from("profissionais").select("id, nome").eq("salao_id", salao.salaoId)).data ?? []).map((p) => [
+          p.id as string,
+          p.nome as string,
+        ])
+      : [],
+  );
   const nomesClientes = new Map(
     idsClientes.length
       ? ((await supabase.from("clientes").select("id, nome").in("id", idsClientes)).data ?? []).map((c) => [c.id as string, c.nome as string])
@@ -171,7 +179,7 @@ async function Painel() {
             <ul className="mt-4 divide-y divide-stone-100">
               {(auditoria as RegistroAuditoria[]).map((r) => (
                 <li key={r.id} className="flex flex-col gap-0.5 py-3 sm:flex-row sm:justify-between sm:gap-4">
-                  <span className="text-sm text-stone-800">{descreverAuditoria(r, nomesClientes)}</span>
+                  <span className="text-sm text-stone-800">{descreverAuditoria(r, nomesClientes, nomesProfissionais)}</span>
                   <span className="shrink-0 text-xs text-stone-500">
                     {dataHoraBrasil(r.em)} · {autor(r.user_id)}
                   </span>

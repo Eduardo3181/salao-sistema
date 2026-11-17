@@ -171,3 +171,57 @@ describe("Registro de horários, configurações e aceite", () => {
     ).toBe("WhatsApp: Maria aceitou receber mensagens");
   });
 });
+
+describe("Registro da agenda", () => {
+  const clientes = new Map([["c1", "Maria"]]);
+  const profs = new Map([["p1", "Ana"], ["p2", "Bia"]]);
+  it("descreve agendamento criado e cancelado com motivo", () => {
+    expect(descreverAuditoria({ ...base, entidade: "agendamentos", depois: { cliente_id: "c1", situacao: "agendado" } }, clientes)).toBe(
+      "Agendamento criado para Maria",
+    );
+    expect(
+      descreverAuditoria(
+        {
+          ...base,
+          entidade: "agendamentos",
+          acao: "update",
+          antes: { cliente_id: "c1", situacao: "agendado" },
+          depois: { cliente_id: "c1", situacao: "cancelado", motivo_cancelamento: "cliente_desmarcou" },
+        },
+        clientes,
+      ),
+    ).toBe("Agendamento de Maria: cancelado (cliente desmarcou)");
+  });
+
+  it("descreve horário marcado e remarcado com troca de profissional (horário de Brasília)", () => {
+    expect(
+      descreverAuditoria({ ...base, entidade: "agendamento_itens", depois: { profissional_id: "p1", inicio: "2026-11-18T13:00:00+00:00" } }, clientes, profs),
+    ).toBe("Horário marcado com Ana: 18/11 às 10:00");
+    expect(
+      descreverAuditoria(
+        {
+          ...base,
+          entidade: "agendamento_itens",
+          acao: "update",
+          antes: { profissional_id: "p1", inicio: "2026-11-18T13:00:00+00:00" },
+          depois: { profissional_id: "p2", inicio: "2026-11-18T17:00:00+00:00" },
+        },
+        clientes,
+        profs,
+      ),
+    ).toBe("Horário remarcado de 18/11 às 10:00 para 18/11 às 14:00, agora com Bia");
+  });
+
+  it("descreve bloqueio da profissional e feriado", () => {
+    expect(
+      descreverAuditoria(
+        { ...base, entidade: "bloqueios", depois: { profissional_id: "p1", inicio: "2026-11-18T15:00:00+00:00", fim: "2026-11-18T16:00:00+00:00", motivo: "Almoço" } },
+        clientes,
+        profs,
+      ),
+    ).toBe("Bloqueio: agenda de Ana, 18/11 às 12:00 até 18/11 às 13:00 (Almoço)");
+    expect(
+      descreverAuditoria({ ...base, entidade: "bloqueios", depois: { profissional_id: null, inicio: "2026-11-20T03:00:00+00:00", fim: "2026-11-21T02:59:00+00:00", motivo: "Feriado" } }),
+    ).toBe("Bloqueio: salão inteiro, 20/11 às 00:00 até 20/11 às 23:59 (Feriado)");
+  });
+});

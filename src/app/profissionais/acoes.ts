@@ -62,3 +62,27 @@ export async function alternarProfissional(form: FormData) {
   if (error) console.error("alternarProfissional falhou:", error.code);
   revalidatePath("/profissionais");
 }
+
+/** O dono escolhe quais profissionais a assistente ajuda (a assistente vê a agenda delas). */
+export async function salvarAjudaAssistente(_: EstadoProfissional, form: FormData): Promise<EstadoProfissional> {
+  const ctx = await exigirSalao();
+  if (!ctx.ehDono) return { erro: "Só o dono escolhe quem a assistente ajuda." };
+  const assistenteId = texto(form, "assistente_id");
+  const escolhidas = form.getAll("profissional_id").map(String);
+  const { error } = await ctx.supabase.rpc("definir_ajuda_assistente", {
+    p_assistente_id: assistenteId,
+    p_profissionais: escolhidas,
+  });
+  if (error) {
+    if (error.code === "42501" || error.code === "22023") return { erro: error.message };
+    console.error("salvarAjudaAssistente falhou:", error.code);
+    return { erro: "Não foi possível salvar. Tente de novo." };
+  }
+  revalidatePath(`/profissionais/${assistenteId}`);
+  revalidatePath("/agenda");
+  return {
+    ok: escolhidas.length
+      ? `Salvo. Ela vê a agenda de ${escolhidas.length} ${escolhidas.length === 1 ? "profissional" : "profissionais"}.`
+      : "Salvo. Ela não vê a agenda de ninguém por enquanto.",
+  };
+}

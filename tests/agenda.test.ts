@@ -368,3 +368,52 @@ describe("Regra geral", () => {
     expect(rows).toEqual([]);
   });
 });
+
+describe("Quem a assistente ajuda (escolha do dono)", () => {
+  const definir = "select public.definir_ajuda_assistente($1, $2::uuid[])";
+  const ajudadas = async () => {
+    await comoAdmin();
+    const { rows } = await db.query("select profissional_id from public.assistentes_profissionais where assistente_id = $1 order by profissional_id", [assistente]);
+    return rows.map((r) => r.profissional_id).sort();
+  };
+
+  it("o dono troca a lista inteira e a agenda da assistente acompanha", async () => {
+    await como(donoA);
+    await db.query(definir, [assistente, [bia, carla]]);
+    expect(await ajudadas()).toEqual([bia, carla].sort());
+    await como(assistUser);
+    const { rows } = await db.query("select id from public.minhas_agendas($1)", [salaoA]);
+    expect(rows.map((r) => r.id).sort()).toEqual([bia, carla].sort());
+  });
+
+  it("lista vazia tira todas", async () => {
+    await como(donoA);
+    await db.query(definir, [assistente, []]);
+    expect(await ajudadas()).toEqual([]);
+  });
+
+  it("recepção, profissional, a própria assistente e outro salão não mexem", async () => {
+    for (const quem of [recepcaoA, anaUser, assistUser, donoB]) {
+      await como(quem);
+      await deveFalhar(definir, [assistente, [ana]]);
+    }
+    expect(await ajudadas()).toEqual([]);
+  });
+
+  it("não aceita profissional de outro salão, outra assistente, nem cadastro que não é assistente", async () => {
+    await como(donoA);
+    await deveFalhar(definir, [assistente, [anaB]]);
+    await deveFalhar(definir, [assistente, [assistente]]);
+    await deveFalhar(definir, [ana, [bia]]);
+    expect(await ajudadas()).toEqual([]);
+  });
+
+  it("fica registrado na auditoria", async () => {
+    await como(donoA);
+    await db.query(definir, [assistente, [ana]]);
+    await comoAdmin();
+    const { rows } = await db.query("select acao from public.audit_log where entidade = 'assistentes_profissionais' and salao_id = $1", [salaoA]);
+    expect(rows.some((r) => r.acao === "insert")).toBe(true);
+    expect(rows.some((r) => r.acao === "delete")).toBe(true);
+  });
+});

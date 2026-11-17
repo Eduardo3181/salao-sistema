@@ -94,3 +94,15 @@ Também: **alterar senha e "esqueci minha senha"** entram no MVP (segurança bá
 - Celular: barra embaixo (Início, Agenda, Clientes, Mais), agenda em lista com uma profissional por vez.
 - Tom rosé e neutros; ícones da biblioteca gratuita Lucide (licença ISC), versão fixa com pelo menos 2 semanas de lançada.
 - Referências estudadas (Salon Soft, Trinks, Avec, Graces, Belasis, Microvix) só para ideias de funções; nada de layout, cores, ícones ou textos copiados (regra 9).
+
+## Comanda e pagamento (decisões da dona, 17/11/2026)
+1. **Formas de pagamento:** Dinheiro, Pix, Débito, Crédito à vista e Crédito parcelado.
+2. **Taxa do crédito parcelado:** uma taxa para cada número de parcelas (2x, 3x...), configurada pelo dono. Débito e crédito à vista têm uma taxa cada.
+3. **Desconto:** por item e também no total da comanda.
+4. **Quem dá desconto ou muda o preço:** chave nas Configurações (dono e recepção sempre; a chave libera as profissionais nos próprios serviços).
+5. **Fechamento automático:** ao marcar **Concluído** na agenda, a comanda abre sozinha com os serviços; ao receber o valor total, a comanda fecha sozinha.
+6. **Quem recebe e fecha a comanda:** chave nas Configurações (dono e recepção sempre; a chave libera as profissionais nas comandas das próprias clientes).
+7. **Comanda sempre com cliente** (pode usar o cadastro rápido).
+8. **Produtos:** nome, preço e custo agora. O **controle de estoque** continua em "Logo depois do MVP" (já estava na fila), para não atrasar o lançamento.
+9. **Aviso de comandas antigas:** qualquer comanda aberta de um dia anterior.
+10. **Reabrir comanda fechada ou excluir item:** dono e recepção, com motivo registrado no histórico (`audit_log`).

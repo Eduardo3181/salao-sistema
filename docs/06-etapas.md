@@ -32,6 +32,14 @@ Pendências anotadas na Etapa 1 (antes do piloto, salvo indicação):
 - Lançar serviços e produtos, escolher assistente, pagar com várias formas, fechar.
 - Alerta de comandas antigas abertas.
 
+### Plano da Etapa 4 (fatias)
+1. Produtos: cadastro com nome, preço e custo (sem estoque).
+2. Base no banco: comandas, itens, assistentes do item e pagamentos; travas por perfil e testes.
+3. Abrir comanda: pela agenda (e sozinha ao marcar Concluído) ou nova comanda; lista de abertas.
+4. Lançar itens: serviço com valor ajustável, produto, profissional, assistente, descontos.
+5. Pagar e fechar: várias formas, troco, taxas do cartão (por número de parcelas no crédito parcelado), fecha sozinha ao receber o total; chaves nas Configurações.
+6. Aviso de comandas antigas, telefone visível para a profissional com comanda aberta, reabrir e excluir item com motivo.
+
 ## Etapa 5: comissões
 - Motor de cálculo configurável com os modelos prontos e simulação.
 - Extrato, pagamento em lote, vales, estorno.

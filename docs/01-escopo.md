@@ -6,7 +6,7 @@ Foco: Agenda, Comanda, Comissão e Caixa funcionando com perfeição.
 1. **Acesso:** cadastro do salão, login, perfis (dono, recepção, profissional, assistente), **alterar senha e "esqueci minha senha"**.
 2. **Cadastros:** serviços (com categoria, duração e preço), profissionais e assistentes, clientes (ficha simples), importação por planilha.
 3. **Agenda:** colunas por profissional, grade de horários, bloqueios (ausências e feriados), status do atendimento. **Cadastro rápido de cliente e de serviço sem sair da agenda.** Profissional usa pelo celular e vê só a própria agenda.
-4. **Comanda:** abrir, lançar serviços e produtos, escolher assistente, pagar (várias formas, com **taxa do cartão por tipo: débito, crédito à vista e crédito parcelado**), fechar. Fechamento automático ao concluir o atendimento e alerta de comandas antigas abertas.
+4. **Comanda:** abrir, lançar serviços e produtos (com custo; sem estoque), escolher assistente, desconto por item e no total, pagar (várias formas, com **taxa do cartão por tipo: débito, crédito à vista e crédito parcelado por número de parcelas**), fechar. Abre sozinha ao concluir o atendimento e fecha sozinha ao receber o total; alerta de comandas antigas abertas. Detalhes em `02-decisoes.md`.
 5. **Comissões:** cálculo por serviço, com assistentes e modelo configurável por salão (ver `04`). Extrato, pagamento em lote e vales.
 6. **Caixa:** movimento do dia, fechamento com conferência.
 7. **Despesas e relatórios básicos:** vendas por item, forma de pagamento e profissional; despesas; resultado. **Baixar listas e relatórios em PDF ou planilha** (no lugar de imprimir).

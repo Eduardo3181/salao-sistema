@@ -96,6 +96,18 @@ describe("Registro de serviços", () => {
       'Categoria criada: "Cabelo"',
     );
   });
+  it("descreve produto criado e mudança de preço e custo", () => {
+    const prod = { ...base, entidade: "produtos" };
+    expect(descreverAuditoria({ ...prod, depois: { nome: "Shampoo", preco_centavos: 4500 } })).toBe('Produto criado: "Shampoo" (R$ 45,00)');
+    expect(
+      descreverAuditoria({
+        ...prod,
+        acao: "update",
+        antes: { nome: "Shampoo", preco_centavos: 4500, custo_centavos: null, ativo: true },
+        depois: { nome: "Shampoo", preco_centavos: 5000, custo_centavos: 2000, ativo: true },
+      }),
+    ).toBe('Produto "Shampoo": preço de R$ 45,00 para R$ 50,00, custo de sem custo para R$ 20,00');
+  });
 });
 
 describe("Registro de quem atende", () => {

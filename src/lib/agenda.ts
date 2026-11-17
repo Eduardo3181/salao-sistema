@@ -115,3 +115,29 @@ export function dataPorExtenso(data: string): string {
     new Date(Date.UTC(a, m - 1, d)),
   );
 }
+
+/**
+ * Serviços em sequência: o primeiro começa no horário escolhido e cada um
+ * começa quando o anterior termina. Devolve o início (em minutos no dia) de cada um.
+ */
+export function horariosEmSequencia(inicio: number, duracoes: number[]): number[] {
+  const inicios: number[] = [];
+  let atual = inicio;
+  for (const d of duracoes) {
+    inicios.push(atual);
+    atual += d;
+  }
+  return inicios;
+}
+
+/** Próximo horário "redondo" de 30 em 30 minutos a partir de agora (para sugerir no botão +). */
+export function proximoHorarioRedondo(agoraMin: number): number {
+  return Math.ceil(agoraMin / PASSO_GRADE_MIN) * PASSO_GRADE_MIN;
+}
+
+/** "09:30" -> 570; devolve null se não for um horário válido. */
+export function lerHora(texto: string | null | undefined): number | null {
+  if (!texto || !/^\d{2}:\d{2}$/.test(texto)) return null;
+  const [h, m] = texto.split(":").map(Number);
+  return h < 24 && m < 60 ? h * 60 + m : null;
+}

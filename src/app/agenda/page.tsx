@@ -1,4 +1,4 @@
-import { ChevronLeft, ChevronRight } from "lucide-react";
+import { ChevronLeft, ChevronRight, Plus } from "lucide-react";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { Suspense } from "react";
@@ -56,6 +56,7 @@ async function Agenda({ searchParams }: { searchParams: Promise<Record<string, s
     [...itens, ...bloqueios.filter((b) => b.profissionalId)].map((x) => ({ inicio: x.inicio, fim: x.fim })),
   );
   const escolhida = colunas.find((c) => c.id === sp.prof) ?? colunas[0];
+  const podeMarcar = salao.perfil !== "assistente" && colunas.length > 0;
   const extraProf = escolhida && colunas.length > 1 ? `&prof=${escolhida.id}` : "";
 
   return (
@@ -79,6 +80,14 @@ async function Agenda({ searchParams }: { searchParams: Promise<Record<string, s
             </Link>
           )}
           <SeletorData data={data} extra={extraProf} />
+          {podeMarcar && (
+            <Link
+              href={`/agenda/novo?data=${data}${escolhida ? `&prof=${escolhida.id}` : ""}`}
+              className="hidden items-center gap-1.5 rounded-lg bg-rose-700 px-4 py-2 text-sm font-semibold text-white hover:bg-rose-800 md:flex"
+            >
+              <Plus aria-hidden className="h-4 w-4" /> Novo horário
+            </Link>
+          )}
         </div>
 
         {/* Legenda */}
@@ -99,8 +108,17 @@ async function Agenda({ searchParams }: { searchParams: Promise<Record<string, s
                 O salão está fechado neste dia. Os horários de funcionamento ficam em Configurações.
               </p>
             )}
-            <GradeComputador colunas={colunas} itens={itens} bloqueios={bloqueios} faixa={faixa} agora={agora} />
+            <GradeComputador colunas={colunas} itens={itens} bloqueios={bloqueios} faixa={faixa} agora={agora} data={data} podeMarcar={podeMarcar} />
             <ListaCelular colunas={colunas} escolhida={escolhida} itens={itens} bloqueios={bloqueios} agora={agora} data={data} />
+            {podeMarcar && (
+              <Link
+                href={`/agenda/novo?data=${data}${escolhida ? `&prof=${escolhida.id}` : ""}`}
+                aria-label="Novo horário"
+                className="fixed bottom-20 right-4 z-30 flex h-14 w-14 items-center justify-center rounded-full bg-rose-700 text-white shadow-lg hover:bg-rose-800 md:hidden"
+              >
+                <Plus aria-hidden className="h-7 w-7" />
+              </Link>
+            )}
           </>
         )}
       </main>
@@ -136,12 +154,16 @@ function GradeComputador({
   bloqueios,
   faixa,
   agora,
+  data,
+  podeMarcar,
 }: {
   colunas: Coluna[];
   itens: ItemAgenda[];
   bloqueios: BloqueioAgenda[];
   faixa: { inicio: number; fim: number };
   agora: number | null;
+  data: string;
+  podeMarcar: boolean;
 }) {
   const linhas = Array.from({ length: (faixa.fim - faixa.inicio) / PASSO_GRADE_MIN }, (_, i) => faixa.inicio + i * PASSO_GRADE_MIN);
   const altura = linhas.length * ALTURA_BLOCO;
@@ -183,15 +205,27 @@ function GradeComputador({
           const meusBloqueios = bloqueios.filter((b) => b.profissionalId === c.id || b.profissionalId === null);
           return (
             <div key={c.id} className="relative border-l border-stone-200" style={{ height: altura }}>
-              {linhas.map((m) => (
-                <div key={m} className={`border-t ${m % 60 === 0 ? "border-stone-200" : "border-stone-100"}`} style={{ height: ALTURA_BLOCO }} />
-              ))}
+              {linhas.map((m) =>
+                podeMarcar ? (
+                  <Link
+                    key={m}
+                    href={`/agenda/novo?data=${data}&prof=${c.id}&hora=${minutosParaHora(m)}`}
+                    aria-label={`Marcar com ${c.nome} às ${minutosParaHora(m)}`}
+                    className={`group block border-t ${m % 60 === 0 ? "border-stone-200" : "border-stone-100"} hover:bg-rose-50`}
+                    style={{ height: ALTURA_BLOCO }}
+                  >
+                    <span className="hidden px-2 pt-1 text-[11px] font-medium text-rose-700 group-hover:block">+ {minutosParaHora(m)}</span>
+                  </Link>
+                ) : (
+                  <div key={m} className={`border-t ${m % 60 === 0 ? "border-stone-200" : "border-stone-100"}`} style={{ height: ALTURA_BLOCO }} />
+                ),
+              )}
 
               {/* fora do expediente */}
               {(c.expediente ? [[faixa.inicio, c.expediente.abre], [c.expediente.fecha, faixa.fim]] : [[faixa.inicio, faixa.fim]])
                 .filter(([a, b]) => b > a)
                 .map(([a, b]) => (
-                  <div key={`fora-${a}`} aria-hidden className="absolute inset-x-0 bg-stone-100/80" style={{ top: topo(a), height: tamanho(a, b) }} />
+                  <div key={`fora-${a}`} aria-hidden className="pointer-events-none absolute inset-x-0 bg-stone-100/70" style={{ top: topo(a), height: tamanho(a, b) }} />
                 ))}
 
               {/* bloqueios */}

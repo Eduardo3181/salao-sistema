@@ -83,3 +83,23 @@ describe("Encaixes lado a lado", () => {
     expect(r.get("y")!.faixa).toBe(r.get("x")!.faixa);
   });
 });
+
+describe("Marcar horário", () => {
+  it("serviços em sequência: cada um começa quando o anterior termina", async () => {
+    const { horariosEmSequencia } = await import("@/lib/agenda");
+    expect(horariosEmSequencia(600, [45, 40, 30])).toEqual([600, 645, 685]);
+  });
+
+  it("sugere o próximo horário redondo de 30 em 30 minutos", async () => {
+    const { proximoHorarioRedondo } = await import("@/lib/agenda");
+    expect(proximoHorarioRedondo(587)).toBe(600);
+    expect(proximoHorarioRedondo(600)).toBe(600);
+  });
+
+  it("lê a hora digitada", async () => {
+    const { lerHora } = await import("@/lib/agenda");
+    expect(lerHora("09:30")).toBe(570);
+    expect(lerHora("25:00")).toBeNull();
+    expect(lerHora("9h")).toBeNull();
+  });
+});

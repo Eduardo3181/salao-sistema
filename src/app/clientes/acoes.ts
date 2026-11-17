@@ -79,11 +79,14 @@ export async function alternarCliente(form: FormData) {
 export async function salvarConfiguracao(form: FormData) {
   const ctx = await exigirSalao();
   if (!ctx.ehDono) return;
-  const valor = form.get("profissionais_editam_clientes") === "on";
+  const valores = {
+    profissionais_editam_clientes: form.get("profissionais_editam_clientes") === "on",
+    exigir_motivo_cancelamento: form.get("exigir_motivo_cancelamento") === "on",
+  };
   // Atualiza se já existe; senão cria (o banco só deixa o dono fazer as duas coisas).
   const atualizado = await ctx.supabase
     .from("configuracao_salao")
-    .update({ profissionais_editam_clientes: valor })
+    .update(valores)
     .eq("salao_id", ctx.salao.salaoId)
     .select("salao_id");
   const { error } =
@@ -91,9 +94,23 @@ export async function salvarConfiguracao(form: FormData) {
       ? atualizado
       : await ctx.supabase
           .from("configuracao_salao")
-          .insert({ salao_id: ctx.salao.salaoId, profissionais_editam_clientes: valor });
+          .insert({ salao_id: ctx.salao.salaoId, ...valores });
   if (error) console.error("salvarConfiguracao falhou:", error.code);
   revalidatePath("/configuracoes");
   revalidatePath("/clientes");
   redirect("/configuracoes?salvo=1");
+}
+
+/** Registra o aceite (ou a recusa) de mensagens no WhatsApp. Nunca apaga o histórico. */
+export async function registrarAceiteWhatsapp(form: FormData) {
+  const ctx = await exigirSalao();
+  if (ctx.salao.perfil !== "dono" && ctx.salao.perfil !== "recepcao") return;
+  const clienteId = texto(form, "cliente_id");
+  const { error } = await ctx.supabase.from("consentimentos_whatsapp").insert({
+    salao_id: ctx.salao.salaoId,
+    cliente_id: clienteId,
+    aceitou: form.get("aceitou") === "true",
+  });
+  if (error) console.error("registrarAceiteWhatsapp falhou:", error.code);
+  revalidatePath(`/clientes/${clienteId}`);
 }

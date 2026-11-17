@@ -139,3 +139,35 @@ describe("Registro de clientes (sem dados pessoais guardados)", () => {
     ).toBe("Configuração: profissionais agora podem cadastrar e alterar clientes");
   });
 });
+
+describe("Registro de horários, configurações e aceite", () => {
+  it("descreve horário do salão e dia fechado", () => {
+    expect(
+      descreverAuditoria({ ...base, entidade: "horarios_funcionamento", depois: { dia_semana: 2, abre: "09:00:00", fecha: "19:00:00", profissional_id: null } }),
+    ).toBe("Horário do salão: terça 09:00–19:00");
+    expect(
+      descreverAuditoria({ ...base, entidade: "horarios_funcionamento", acao: "delete", antes: { dia_semana: 0, profissional_id: null } }),
+    ).toBe("Horário do salão: domingo fechado");
+  });
+
+  it("descreve a troca da opção de motivo ao cancelar", () => {
+    expect(
+      descreverAuditoria({
+        ...base,
+        entidade: "configuracao_salao",
+        acao: "update",
+        antes: { profissionais_editam_clientes: true, exigir_motivo_cancelamento: true },
+        depois: { profissionais_editam_clientes: true, exigir_motivo_cancelamento: false },
+      }),
+    ).toBe("Configuração: motivo ao cancelar deixa de ser exigido");
+  });
+
+  it("descreve o aceite de WhatsApp com o nome atual da cliente", () => {
+    expect(
+      descreverAuditoria(
+        { ...base, entidade: "consentimentos_whatsapp", depois: { cliente_id: "c1", aceitou: true } },
+        new Map([["c1", "Maria"]]),
+      ),
+    ).toBe("WhatsApp: Maria aceitou receber mensagens");
+  });
+});

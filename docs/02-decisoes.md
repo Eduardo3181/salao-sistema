@@ -62,3 +62,15 @@ Respostas da dona (17/11/2026):
 - Prévia mostra linhas prontas e linhas com problema (com o motivo). Limite de 2000 linhas por vez.
 - Clientes repetidas (mesmo telefone; ou, sem telefone, mesmo nome) e serviços repetidos (mesmo nome) são pulados. Categorias que não existem são criadas.
 - Se qualquer linha for recusada pelo banco, nada é gravado (tudo ou nada).
+
+## Etapa 3: agenda (decisões da dona, 17/11/2026)
+1. Horário de funcionamento do salão por dia da semana; cada profissional pode ter horário próprio (sem horário próprio = segue o do salão).
+2. Grade da agenda de **30 minutos fixos**.
+3. Encaixe (dois horários ao mesmo tempo para a mesma profissional): permitido, **com aviso**.
+4. Um agendamento pode ter vários serviços, cada um com sua profissional e seu horário, em sequência.
+5. Situações: Agendado → Confirmado → Cliente chegou → Concluído; e Faltou, Cancelado.
+6. Motivo ao cancelar: **o dono configura** (exigir ou não). Começa exigindo.
+7. Bloqueios: dono e recepção bloqueiam qualquer agenda; a profissional bloqueia só a própria; feriado do salão, só o dono.
+8. Assistente (com acesso dado pelo dono) vê a agenda das profissionais que ela ajuda; o dono escolhe quais.
+9. Horário no passado: só dono e recepção, com aviso.
+10. Aceite de WhatsApp na ficha da cliente: entra já nesta etapa (marcado por dono ou recepção, com data e histórico), para os lembretes de `docs/07-lembretes-whatsapp.md`.

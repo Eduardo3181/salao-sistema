@@ -53,7 +53,17 @@ async function Painel() {
   const membros = (equipe ?? []) as MembroEquipe[];
   // A auditoria de clientes não guarda o nome (LGPD): busca o nome atual de quem aparece no registro.
   const idsClientes = [
-    ...new Set(((auditoria ?? []) as RegistroAuditoria[]).filter((r) => r.entidade === "clientes" && r.entidade_id).map((r) => r.entidade_id!)),
+    ...new Set(
+      ((auditoria ?? []) as RegistroAuditoria[])
+        .map((r) =>
+          r.entidade === "clientes"
+            ? r.entidade_id
+            : r.entidade === "consentimentos_whatsapp"
+              ? (r.depois?.cliente_id as string | undefined)
+              : null,
+        )
+        .filter((id): id is string => Boolean(id)),
+    ),
   ];
   const nomesClientes = new Map(
     idsClientes.length

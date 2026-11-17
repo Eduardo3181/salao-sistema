@@ -7,7 +7,8 @@ import { Mensagem } from "@/components/ui";
 import { buscarCliente, buscarConfiguracao, podeEditarClientes, podeVerClientes, podeVerTelefone } from "@/lib/clientes";
 import { exigirSalao } from "@/lib/sessao";
 import { formatarTelefone, hojeEmBrasilia, linkWhatsApp } from "@/lib/telefone-data";
-import { alternarCliente } from "../acoes";
+import { alternarCliente, registrarAceiteWhatsapp } from "../acoes";
+import { dataHoraBrasil } from "@/lib/salao";
 import FormCliente from "../form-cliente";
 
 export const metadata: Metadata = { title: "Cliente | Sistema do Salão" };
@@ -40,6 +41,19 @@ async function Ficha({
   if (!cliente) notFound();
   const pode = podeEditarClientes(salao.perfil, config.profissionaisEditamClientes);
   const whats = linkWhatsApp(cliente.telefone);
+
+  // Aceite de mensagens no WhatsApp: só dono e recepção veem (o banco garante).
+  const aceite = veTelefone
+    ? (
+        await supabase
+          .from("consentimentos_whatsapp")
+          .select("aceitou, registrado_em")
+          .eq("cliente_id", cliente.id)
+          .order("registrado_em", { ascending: false })
+          .limit(1)
+          .maybeSingle()
+      ).data
+    : null;
 
   return (
     <div className="flex flex-1 flex-col bg-stone-100">
@@ -98,6 +112,39 @@ async function Ficha({
             </dl>
           )}
         </section>
+
+        {veTelefone && (
+          <section className={cartao}>
+            <h2 className="font-semibold text-stone-900">Mensagens no WhatsApp</h2>
+            <p className="mt-1 text-sm text-stone-700">
+              {aceite === null
+                ? "Ainda não perguntado."
+                : aceite.aceitou
+                  ? `Aceitou em ${dataHoraBrasil(aceite.registrado_em)}.`
+                  : `Não aceitou (registrado em ${dataHoraBrasil(aceite.registrado_em)}).`}
+            </p>
+            <p className="mt-3 rounded-lg bg-stone-50 p-3 text-sm italic text-stone-600">
+              &ldquo;Você aceita receber mensagens do {salao.nome} pelo WhatsApp, como lembrete do seu horário, aviso de
+              quando for hora de voltar e parabéns no seu aniversário? Você pode pedir para parar quando quiser, é só
+              responder SAIR.&rdquo;
+            </p>
+            <div className="mt-4 flex flex-wrap gap-2">
+              {[
+                { valor: "true", rotulo: "Aceitou" },
+                { valor: "false", rotulo: "Não aceitou" },
+              ].map((b) => (
+                <form key={b.valor} action={registrarAceiteWhatsapp}>
+                  <input type="hidden" name="cliente_id" value={cliente.id} />
+                  <input type="hidden" name="aceitou" value={b.valor} />
+                  <button className="rounded-lg px-4 py-2 text-sm font-semibold text-stone-700 ring-1 ring-stone-300 hover:bg-stone-50">
+                    {b.rotulo}
+                  </button>
+                </form>
+              ))}
+            </div>
+            <p className="mt-2 text-xs text-stone-500">Cada resposta fica guardada com data, para a cliente e para a LGPD. Os envios de mensagem chegam depois do lançamento.</p>
+          </section>
+        )}
 
         {pode && (
           <form action={alternarCliente} className="text-center">

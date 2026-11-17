@@ -10,14 +10,17 @@ export type Cliente = {
   ativo: boolean;
 };
 
-/** Configurações do salão (sem linha salva = padrão: profissionais podem editar clientes). */
+/** Configurações do salão (sem linha salva = padrões: as duas chaves ligadas). */
 export async function buscarConfiguracao(supabase: SupabaseClient, salaoId: string) {
   const { data } = await supabase
     .from("configuracao_salao")
-    .select("profissionais_editam_clientes")
+    .select("profissionais_editam_clientes, exigir_motivo_cancelamento")
     .eq("salao_id", salaoId)
     .maybeSingle();
-  return { profissionaisEditamClientes: data ? Boolean(data.profissionais_editam_clientes) : true };
+  return {
+    profissionaisEditamClientes: data ? Boolean(data.profissionais_editam_clientes) : true,
+    exigirMotivoCancelamento: data ? Boolean(data.exigir_motivo_cancelamento) : true,
+  };
 }
 
 /** Mesma regra do banco (privado.pode_editar_clientes), para mostrar ou esconder botões. */

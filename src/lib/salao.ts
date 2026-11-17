@@ -128,13 +128,30 @@ export function descreverAuditoria(r: RegistroAuditoria, nomesClientes?: Map<str
     return campos.length ? `Ficha de ${nome} alterada (${campos.join(", ")})` : `Ficha de ${nome} alterada`;
   }
   if (r.entidade === "configuracao_salao") {
-    const ligou = r.depois?.profissionais_editam_clientes === true;
-    if (r.acao === "insert" || r.antes?.profissionais_editam_clientes !== r.depois?.profissionais_editam_clientes)
-      return `Configuração: profissionais ${ligou ? "agora podem" : "não podem mais"} cadastrar e alterar clientes`;
-    return "Configurações do salão alteradas";
+    const frases: string[] = [];
+    const mudou = (c: string) => r.acao === "insert" || r.antes?.[c] !== r.depois?.[c];
+    if (mudou("profissionais_editam_clientes"))
+      frases.push(`profissionais ${r.depois?.profissionais_editam_clientes ? "agora podem" : "não podem mais"} cadastrar e alterar clientes`);
+    if (mudou("exigir_motivo_cancelamento") && r.depois?.exigir_motivo_cancelamento !== undefined)
+      frases.push(`motivo ao cancelar ${r.depois?.exigir_motivo_cancelamento ? "passa a ser exigido" : "deixa de ser exigido"}`);
+    return frases.length ? `Configuração: ${frases.join("; ")}` : "Configurações do salão alteradas";
+  }
+  if (r.entidade === "horarios_funcionamento") {
+    const linha = r.depois ?? r.antes;
+    const dia = DIAS_SEMANA_REGISTRO[Number(linha?.dia_semana)] ?? "";
+    const quem = linha?.profissional_id ? "Horário de trabalho de uma profissional" : "Horário do salão";
+    if (r.acao === "delete") return `${quem}: ${dia} fechado`;
+    return `${quem}: ${dia} ${String(r.depois?.abre).slice(0, 5)}–${String(r.depois?.fecha).slice(0, 5)}`;
+  }
+  if (r.entidade === "consentimentos_whatsapp") {
+    const id = r.depois?.cliente_id as string | undefined;
+    const nome = (id && nomesClientes?.get(id)) || "cliente removida";
+    return `WhatsApp: ${nome} ${r.depois?.aceitou ? "aceitou receber mensagens" : "não aceitou receber mensagens"}`;
   }
   return `${r.acao} em ${r.entidade}`;
 }
+
+const DIAS_SEMANA_REGISTRO = ["domingo", "segunda", "terça", "quarta", "quinta", "sexta", "sábado"];
 
 const NOME_CAMPO_CLIENTE: Record<string, string> = {
   nome: "nome",

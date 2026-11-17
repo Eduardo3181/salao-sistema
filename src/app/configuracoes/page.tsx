@@ -5,7 +5,9 @@ import { Suspense } from "react";
 import { salvarConfiguracao } from "@/app/clientes/acoes";
 import { Cabecalho } from "@/components/cabecalho";
 import { Mensagem } from "@/components/ui";
+import FormHorarios from "@/components/form-horarios";
 import { buscarConfiguracao } from "@/lib/clientes";
+import { resumirHorarios, type HorarioDia } from "@/lib/horarios";
 import { exigirSalao } from "@/lib/sessao";
 
 export const metadata: Metadata = { title: "Configurações | Sistema do Salão" };
@@ -22,7 +24,15 @@ async function Configuracoes({ searchParams }: { searchParams: Promise<Record<st
   const sp = await searchParams;
   const { supabase, salao, ehDono } = await exigirSalao();
   if (!ehDono) redirect("/painel");
-  const config = await buscarConfiguracao(supabase, salao.salaoId);
+  const [config, { data: horarios }] = await Promise.all([
+    buscarConfiguracao(supabase, salao.salaoId),
+    supabase
+      .from("horarios_funcionamento")
+      .select("dia_semana, abre, fecha")
+      .eq("salao_id", salao.salaoId)
+      .is("profissional_id", null),
+  ]);
+  const dias = (horarios ?? []) as HorarioDia[];
 
   return (
     <div className="flex flex-1 flex-col bg-stone-100">
@@ -31,6 +41,14 @@ async function Configuracoes({ searchParams }: { searchParams: Promise<Record<st
       <main className="mx-auto w-full max-w-3xl flex-1 space-y-6 px-4 py-6">
         <h1 className="text-xl font-semibold text-stone-900">Configurações</h1>
         {sp.salvo === "1" && <Mensagem tipo="aviso">Configuração salva. Vale a partir de agora.</Mensagem>}
+
+        <section className="rounded-2xl bg-white p-6 shadow-sm ring-1 ring-stone-200">
+          <h2 className="font-semibold text-stone-900">Horário de funcionamento do salão</h2>
+          <p className="mt-1 text-sm text-stone-500">Agora: {resumirHorarios(dias)}. A agenda usa estes horários, em blocos de 30 minutos.</p>
+          <div className="mt-4">
+            <FormHorarios dias={dias} />
+          </div>
+        </section>
 
         <form action={salvarConfiguracao} className="rounded-2xl bg-white p-6 shadow-sm ring-1 ring-stone-200">
           <h2 className="font-semibold text-stone-900">Permissões</h2>
@@ -45,6 +63,20 @@ async function Configuracoes({ searchParams }: { searchParams: Promise<Record<st
               <span className="block text-sm font-medium text-stone-900">Profissionais podem cadastrar e alterar clientes</span>
               <span className="block text-xs text-stone-500">
                 Começa ligado. Dono e recepção sempre podem. Desligado: profissionais só consultam a ficha. Profissionais nunca veem o telefone das clientes; assistentes não acessam clientes.
+              </span>
+            </span>
+          </label>
+          <label className="mt-4 flex items-start gap-3">
+            <input
+              type="checkbox"
+              name="exigir_motivo_cancelamento"
+              defaultChecked={config.exigirMotivoCancelamento}
+              className="mt-1 h-5 w-5 shrink-0 accent-rose-700"
+            />
+            <span>
+              <span className="block text-sm font-medium text-stone-900">Exigir motivo ao cancelar um horário</span>
+              <span className="block text-xs text-stone-500">
+                Começa ligado. Ligado: quem cancela escolhe o motivo (cliente desmarcou, salão desmarcou, outro).
               </span>
             </span>
           </label>

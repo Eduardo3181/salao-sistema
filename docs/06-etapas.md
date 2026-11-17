@@ -49,3 +49,11 @@ Pendências anotadas na Etapa 1 (antes do piloto, salvo indicação):
 - 3 a 5 salões conhecidos, preço reduzido.
 - Empresa aberta, termos de uso e LGPD prontos, cobrança configurada.
 - Revisão de segurança antes de cobrar.
+
+### Plano da Etapa 3 (fatias)
+1. Horários de funcionamento (salão e profissionais), opção "exigir motivo ao cancelar" e aceite de WhatsApp na ficha.
+2. Base da agenda no banco: agendamentos, serviços do agendamento, bloqueios; travas por perfil e testes.
+3. Tela da agenda do dia com colunas por profissional.
+4. Marcar, remarcar, mudar situação e cancelar (avisos de encaixe e de horário no passado).
+5. Bloqueios e feriados na tela.
+6. Assistente: escolha de quais profissionais ela ajuda e visão da agenda delas.

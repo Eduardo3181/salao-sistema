@@ -2,7 +2,7 @@ import { createServerClient } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
 
 /** Páginas que exigem login. */
-const PROTEGIDAS = ["/painel", "/novo-salao", "/trocar-senha", "/servicos", "/profissionais", "/clientes", "/configuracoes"];
+const PROTEGIDAS = ["/painel", "/novo-salao", "/trocar-senha", "/servicos", "/profissionais", "/clientes", "/configuracoes", "/importar"];
 /** Páginas só para quem não está logado. */
 const SO_VISITANTE = ["/", "/entrar", "/criar-conta"];
 

@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Link from "next/link";
 import { redirect } from "next/navigation";
 import { Suspense } from "react";
 import { salvarConfiguracao } from "@/app/clientes/acoes";
@@ -52,6 +53,14 @@ async function Configuracoes({ searchParams }: { searchParams: Promise<Record<st
           </button>
           <p className="mt-2 text-xs text-stone-500">Toda mudança aqui fica anotada no registro de atividades.</p>
         </form>
+
+        <section className="rounded-2xl bg-white p-6 shadow-sm ring-1 ring-stone-200">
+          <h2 className="font-semibold text-stone-900">Importar planilha</h2>
+          <p className="mt-1 text-sm text-stone-500">Traga clientes ou serviços de uma planilha do Excel ou de outro sistema.</p>
+          <Link href="/importar" className="mt-4 inline-block rounded-lg px-4 py-2 text-sm font-semibold text-rose-700 ring-1 ring-rose-200 hover:bg-rose-50">
+            Importar planilha
+          </Link>
+        </section>
       </main>
     </div>
   );

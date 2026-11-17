@@ -39,7 +39,14 @@ async function Clientes({ searchParams }: { searchParams: Promise<Record<string,
       <Cabecalho salao={salao} atual="/clientes" />
 
       <main className="mx-auto w-full max-w-3xl flex-1 space-y-6 px-4 py-6">
-        <h1 className="text-xl font-semibold text-stone-900">Clientes</h1>
+        <div className="flex items-center justify-between gap-4">
+          <h1 className="text-xl font-semibold text-stone-900">Clientes</h1>
+          {salao.perfil === "dono" && (
+            <Link href="/importar" className="text-sm font-semibold text-rose-700 hover:underline">
+              Importar planilha
+            </Link>
+          )}
+        </div>
 
         {pode && (
           <section className={cartao}>

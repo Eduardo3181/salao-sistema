@@ -41,7 +41,14 @@ async function Servicos() {
 
       <main className="mx-auto w-full max-w-3xl flex-1 space-y-6 px-4 py-6">
         <div className="flex items-center justify-between gap-4">
-          <h1 className="text-xl font-semibold text-stone-900">Serviços</h1>
+          <div className="flex items-baseline gap-3">
+            <h1 className="text-xl font-semibold text-stone-900">Serviços</h1>
+            {ehDono && (
+              <Link href="/importar" className="text-sm font-semibold text-rose-700 hover:underline">
+                Importar planilha
+              </Link>
+            )}
+          </div>
           {ehDono && categorias.some((c) => c.ativo) && (
             <Link href="/servicos/novo" className="rounded-lg bg-rose-700 px-4 py-2 text-sm font-semibold text-white hover:bg-rose-800">
               + Novo serviço

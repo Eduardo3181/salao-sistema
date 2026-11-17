@@ -56,3 +56,9 @@ Respostas da dona (17/11/2026):
 - A profissional busca clientes **só pelo nome** e **não vê o telefone**; verá o telefone apenas das clientes com comanda aberta com ela (Etapa 4). Ela pode informar o telefone ao cadastrar uma cliente nova, mas não lê nem altera depois (travado no banco).
 - Assistente só usa o app se o dono der acesso (perfil "Assistente" na Equipe), e só para **ver a própria agenda e consultar a própria comissão**. Não vê clientes nem altera nada.
 - Técnico: a leitura de clientes passa pela função clientes_do_salao, que esconde o telefone de quem não pode ver; a coluna telefone não pode ser lida diretamente por ninguém.
+
+## Importação por planilha (17/11/2026)
+- Só o dono importa. Aceita .xlsx e .csv (Excel brasileiro com ponto e vírgula). O arquivo é lido no navegador e não é guardado; só as linhas confirmadas vão para o banco.
+- Prévia mostra linhas prontas e linhas com problema (com o motivo). Limite de 2000 linhas por vez.
+- Clientes repetidas (mesmo telefone; ou, sem telefone, mesmo nome) e serviços repetidos (mesmo nome) são pulados. Categorias que não existem são criadas.
+- Se qualquer linha for recusada pelo banco, nada é gravado (tudo ou nada).

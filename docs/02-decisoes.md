@@ -91,7 +91,7 @@ Também: **alterar senha e "esqueci minha senha"** entram no MVP (segurança bá
 ## Visual do sistema (decisão da dona, 17/11/2026)
 - **Modelo A no computador + Modelo C no celular** (mesmo sistema, ajusta sozinho ao tamanho da tela).
 - Computador: menu lateral claro com ícones e nomes; agenda em colunas por profissional, com inicial no topo, cores por situação com legenda, cinza fora do expediente, bloqueios listrados e linha da hora atual.
-- Celular: barra embaixo (Início, Agenda, Clientes, Mais), agenda em lista com uma profissional por vez.
+- Celular: barra embaixo (Início, Agenda, Comandas, Mais; Clientes fica em Mais, decisão da dona em 17/11/2026), agenda em lista com uma profissional por vez.
 - Tom rosé e neutros; ícones da biblioteca gratuita Lucide (licença ISC), versão fixa com pelo menos 2 semanas de lançada.
 - Referências estudadas (Salon Soft, Trinks, Avec, Graces, Belasis, Microvix) só para ideias de funções; nada de layout, cores, ícones ou textos copiados (regra 9).
 
@@ -106,3 +106,17 @@ Também: **alterar senha e "esqueci minha senha"** entram no MVP (segurança bá
 8. **Produtos:** nome, preço e custo agora. O **controle de estoque** continua em "Logo depois do MVP" (já estava na fila), para não atrasar o lançamento.
 9. **Aviso de comandas antigas:** qualquer comanda aberta de um dia anterior.
 10. **Reabrir comanda fechada ou excluir item:** dono e recepção, com motivo registrado no histórico (`audit_log`).
+
+## Comissões (decisões da dona, 17/11/2026)
+1. **Comissão da profissional:** % por profissional, com exceção por serviço. Precedência (a mais específica vence): profissional + serviço, depois serviço, depois profissional, depois padrão do salão.
+2. **Produto vendido:** cada salão escolhe se gera comissão para quem vendeu (com % própria para produtos).
+3. **Taxa do cartão:** cada salão escolhe nas Configurações. Se descontar, a comissão é calculada sobre o valor do item menos a parte da taxa que cabe a ele (rateio proporcional ao valor dos itens).
+4. **Desconto no total da comanda:** não reduz a comissão; ela é calculada sobre o valor de cada item (o desconto geral fica por conta do salão).
+5. **Assistentes:** o Espaço Persona hoje não usa; já usou fixo mensal + comissão. Os modelos de `04-comissoes-e-assistentes.md` ficam configuráveis por salão.
+6. **Mais de uma assistente no mesmo serviço:** a parte das assistentes é calculada uma vez e dividida igualmente entre elas.
+7. **Sobra de centavo:** fica com a profissional (na divisão entre assistentes, o centavo que sobra volta para quem paga a parte delas).
+8. **Vales:** o dono escolhe, na hora de pagar, se desconta tudo, uma parte ou nada.
+9. **Período de pagamento:** livre (o dono escolhe as datas), com atalhos para semana, quinzena e mês.
+10. **Comprovante do pagamento:** PDF para baixar ou imprimir e a profissional assinar.
+11. **Reabrir comanda com comissão já paga:** permitido; a diferença entra como ajuste (a mais ou a menos) no próximo pagamento.
+12. **Extrato da profissional:** detalhe de cada serviço (valor, %, taxa descontada, parte da assistente).

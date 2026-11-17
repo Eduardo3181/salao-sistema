@@ -45,6 +45,14 @@ Pendências anotadas na Etapa 1 (antes do piloto, salvo indicação):
 - Extrato, pagamento em lote, vales, estorno.
 - Testes automáticos de todos os modelos.
 
+### Plano da Etapa 5 (fatias)
+1. Motor de cálculo puro (src/lib/comissoes.ts) com testes de cada modelo, arredondamento, taxa e limites.
+2. Configuração: comissão por profissional, exceções por serviço, produtos, taxa e regras de assistente; modelos prontos e simulação.
+3. Calcular ao fechar a comanda (snapshot no item); desfazer ao reabrir/cancelar, com ajuste se já paga.
+4. Extrato por período (dono e a própria profissional).
+5. Pagamento em lote com comprovante em PDF; cancelar pagamento com motivo.
+6. Vales (adiantamentos) descontados à escolha do dono no pagamento.
+
 ## Etapa 6: caixa, despesas e relatórios
 - Fechamento do caixa com conferência.
 - Relatórios básicos e resultado do período.

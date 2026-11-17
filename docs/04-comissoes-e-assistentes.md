@@ -32,12 +32,12 @@ Serviço de R$ 200, profissional com 50% de comissão, assistente com 20% da com
 - O salão não tem custo extra por serviço; o custo é o fixo mensal.
 
 ## Regras de cálculo
-- Dinheiro em centavos inteiros; regra de arredondamento definida (a sobra vai para uma das partes).
+- Dinheiro em centavos inteiros. Porcentagens arredondadas ao centavo mais próximo; na divisão entre assistentes, o centavo que sobra volta para quem paga a parte delas (decisão da dona: sobra fica com a profissional).
 - Um serviço pode ter zero, um ou mais assistentes, cada um com sua regra.
 - A soma dos repasses não pode passar da comissão disponível; o sistema bloqueia.
-- Comissão passa a valer quando a comanda é fechada e paga (ou ao receber, conforme configuração). Comanda cancelada estorna tudo junto.
+- Comissão passa a valer quando a comanda é fechada (o sistema só fecha com tudo pago). Comanda reaberta ou cancelada desfaz o cálculo; se já estava paga, a diferença vira ajuste no próximo pagamento.
 - A regra usada fica gravada no item da comanda. Mudar a configuração afeta só comandas novas.
-- Pacotes e descontos: calcular sobre o valor realmente cobrado.
+- Descontos: a comissão é calculada sobre o valor cobrado no item (preço do item menos o desconto do item). O desconto no total da comanda não reduz a comissão (decisão da dona, 17/11/2026).
 - Taxa de cartão: se configurada para descontar, vale de forma proporcional para profissional e assistente.
 - Só o dono altera a configuração, com aviso ("vale a partir de agora") e registro em auditoria.
 

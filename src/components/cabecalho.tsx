@@ -21,14 +21,14 @@ export const MENU: Item[] = [
 ];
 
 /** Os que cabem na barra de baixo do celular (o resto fica em "Mais"). */
-const NA_BARRA = ["/painel", "/agenda", "/clientes"];
+const NA_BARRA = ["/painel", "/agenda", "/comandas"];
 
 export const itensDoMenu = (perfil: Perfil) => MENU.filter((i) => i.perfis.includes(perfil));
 
 /**
  * Menu das páginas internas (modelo A no computador + C no celular):
  * - computador: menu lateral claro, fixo à esquerda;
- * - celular: barra fixa embaixo (Início, Agenda, Clientes, Mais) e o nome do salão no topo.
+ * - celular: barra fixa embaixo (Início, Agenda, Comandas, Mais) e o nome do salão no topo.
  * As páginas reservam o espaço com "md:pl-56" e "pb-20 md:pb-0".
  */
 export function Cabecalho({ salao, atual }: { salao: MeuSalao; atual: string }) {

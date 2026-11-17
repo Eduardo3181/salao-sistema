@@ -190,3 +190,22 @@ describe("Bloqueios (combinações inválidas)", () => {
     ).toThrow(ErroComissao);
   });
 });
+
+describe("Configuração salva -> formato do motor", () => {
+  it("monta as regras por nível e a regra da assistente", async () => {
+    const { montarRegras, montarRegraAssistente, CONFIG_VAZIA } = await import("@/lib/comissoes-config");
+    const regras = montarRegras({ ...CONFIG_VAZIA, percentual_padrao: 4000 }, [
+      { profissional_id: "ana", servico_id: null, percentual: 5000 },
+      { profissional_id: null, servico_id: "corte", percentual: 4500 },
+      { profissional_id: "ana", servico_id: "corte", percentual: 3500 },
+    ]);
+    expect(resolverPercentual(regras, "ana", "corte").percentual).toBe(3500);
+    expect(resolverPercentual(regras, "bia", "corte").percentual).toBe(4500);
+    expect(resolverPercentual(regras, "ana", "escova").percentual).toBe(5000);
+    expect(resolverPercentual(regras, "bia", "escova").percentual).toBe(4000);
+    expect(montarRegraAssistente(CONFIG_VAZIA)).toBeNull();
+    expect(
+      montarRegraAssistente({ ...CONFIG_VAZIA, assistente_base: "valor_fixo", assistente_valor: 1500, assistente_quem_paga: "profissional" }),
+    ).toEqual({ base: "valor_fixo", valor: 1500, quemPaga: "profissional", percentualDaProfissional: undefined });
+  });
+});

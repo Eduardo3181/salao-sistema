@@ -33,7 +33,7 @@ for (const id of ids) {
 }
 
 // Ordem importa por causa das chaves estrangeiras.
-for (const tabela of ["assistentes_profissionais", "pagamentos", "taxas_cartao", "comanda_item_assistentes", "comanda_itens", "comandas", "bloqueios", "agendamento_itens", "agendamentos", "consentimentos_whatsapp", "horarios_funcionamento", "clientes", "configuracao_salao", "profissionais", "servicos", "categorias_servico", "produtos", "usuarios_salao", "audit_log"]) {
+for (const tabela of ["regras_comissao", "configuracao_comissao", "assistentes_profissionais", "pagamentos", "taxas_cartao", "comanda_item_assistentes", "comanda_itens", "comandas", "bloqueios", "agendamento_itens", "agendamentos", "consentimentos_whatsapp", "horarios_funcionamento", "clientes", "configuracao_salao", "profissionais", "servicos", "categorias_servico", "produtos", "usuarios_salao", "audit_log"]) {
   falhou((await a.from(tabela).delete().in("salao_id", saloes)).error);
 }
 falhou((await a.from("saloes").delete().in("id", saloes)).error);

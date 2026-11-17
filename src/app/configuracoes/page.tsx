@@ -120,6 +120,14 @@ async function Configuracoes({ searchParams }: { searchParams: Promise<Record<st
         </form>
 
         <section className="rounded-2xl bg-white p-6 shadow-sm ring-1 ring-stone-200">
+          <h2 className="font-semibold text-stone-900">Comissões</h2>
+          <p className="mt-1 text-sm text-stone-500">% das profissionais, exceções por serviço, produtos, taxa do cartão e assistentes, com simulação.</p>
+          <Link href="/configuracoes/comissoes" className="mt-4 inline-block rounded-lg px-4 py-2 text-sm font-semibold text-rose-700 ring-1 ring-rose-200 hover:bg-rose-50">
+            Configurar comissões
+          </Link>
+        </section>
+
+        <section className="rounded-2xl bg-white p-6 shadow-sm ring-1 ring-stone-200">
           <h2 className="font-semibold text-stone-900">Taxas do cartão</h2>
           <p className="mt-1 mb-4 text-sm text-stone-500">
             Quanto a maquininha cobra, em %. Deixe vazio se não houver taxa. Cada pagamento guarda a taxa do dia, então mudar aqui não altera o passado.

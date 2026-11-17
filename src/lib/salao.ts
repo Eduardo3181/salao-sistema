@@ -161,6 +161,33 @@ export function descreverAuditoria(
       frases.push(`profissionais ${r.depois?.profissionais_recebem_pagamento ? "agora podem" : "não podem mais"} receber pagamentos`);
     return frases.length ? `Configuração: ${frases.join("; ")}` : "Configurações do salão alteradas";
   }
+  if (r.entidade === "configuracao_comissao") {
+    const pct = (v: unknown) => `${Math.floor(Number(v) / 100)},${String(Number(v) % 100).padStart(2, "0")}%`.replace(",00%", "%");
+    if (r.acao === "insert") return `Comissões configuradas: padrão do salão ${pct(r.depois?.percentual_padrao)}`;
+    const m: string[] = [];
+    if (r.antes?.percentual_padrao !== r.depois?.percentual_padrao)
+      m.push(`padrão de ${pct(r.antes?.percentual_padrao)} para ${pct(r.depois?.percentual_padrao)}`);
+    if (r.antes?.descontar_taxa_cartao !== r.depois?.descontar_taxa_cartao)
+      m.push(r.depois?.descontar_taxa_cartao ? "passa a descontar a taxa do cartão" : "deixa de descontar a taxa do cartão");
+    if (r.antes?.comissao_produtos !== r.depois?.comissao_produtos || r.antes?.percentual_produtos !== r.depois?.percentual_produtos)
+      m.push(r.depois?.comissao_produtos ? `produtos com ${pct(r.depois?.percentual_produtos)}` : "produtos sem comissão");
+    if (
+      r.antes?.assistente_base !== r.depois?.assistente_base ||
+      r.antes?.assistente_valor !== r.depois?.assistente_valor ||
+      r.antes?.assistente_quem_paga !== r.depois?.assistente_quem_paga ||
+      r.antes?.assistente_percentual_profissional !== r.depois?.assistente_percentual_profissional
+    )
+      m.push(r.depois?.assistente_base ? "regra das assistentes alterada" : "sem regra de assistentes");
+    return m.length ? `Comissões: ${m.join("; ")}` : "Comissões: configuração salva";
+  }
+  if (r.entidade === "regras_comissao") {
+    const x = r.depois ?? r.antes;
+    const pct = (v: unknown) => `${Math.floor(Number(v) / 100)},${String(Number(v) % 100).padStart(2, "0")}%`.replace(",00%", "%");
+    const alvo = x?.profissional_id && x?.servico_id ? "profissional em um serviço" : x?.profissional_id ? "profissional" : "serviço";
+    if (r.acao === "delete") return `Exceção de comissão (${alvo}) removida`;
+    if (r.acao === "insert") return `Exceção de comissão (${alvo}): ${pct(r.depois?.percentual)}`;
+    return `Exceção de comissão (${alvo}): de ${pct(r.antes?.percentual)} para ${pct(r.depois?.percentual)}`;
+  }
   if (r.entidade === "taxas_cartao") {
     const t = r.depois ?? r.antes;
     const nome = t?.forma === "debito" ? "débito" : t?.forma === "credito_vista" ? "crédito à vista" : `crédito ${t?.parcelas}x`;

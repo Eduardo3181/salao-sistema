@@ -250,10 +250,11 @@ function GradeComputador({
                 const cor = COR[i.situacao] ?? COR.agendado;
                 const largura = 100 / pos.faixas;
                 return (
-                  <div
+                  <Link
                     key={i.id}
+                    href={`/agenda/horario/${i.agendamentoId}?data=${data}`}
                     title={`${minutosParaHora(i.inicio)}–${minutosParaHora(i.fim)} · ${i.cliente ?? "Cliente"} · ${i.servico} · ${NOME_SITUACAO[i.situacao]}`}
-                    className={`absolute overflow-hidden border-l-4 px-2 py-1 text-xs leading-snug ${cor.fundo} ${cor.faixa} ${cor.texto}`}
+                    className={`absolute z-[5] block overflow-hidden border-l-4 px-2 py-1 text-xs leading-snug hover:brightness-95 ${cor.fundo} ${cor.faixa} ${cor.texto}`}
                     style={{
                       top: topo(i.inicio) + 1,
                       height: tamanho(i.inicio, i.fim) - 2,
@@ -263,7 +264,7 @@ function GradeComputador({
                   >
                     <span className="font-semibold">{minutosParaHora(i.inicio)}</span> {i.cliente ?? "Cliente"}
                     <span className="block truncate opacity-80">{i.servico}</span>
-                  </div>
+                  </Link>
                 );
               })}
 
@@ -349,13 +350,16 @@ function ListaCelular({
             ) : (
               <li key={l.item.id} className="flex gap-3">
                 <span className="w-12 pt-3 text-right text-xs text-stone-400">{minutosParaHora(l.min)}</span>
-                <div className={`flex-1 rounded-xl border-l-4 px-4 py-3 ${COR[l.item.situacao]?.fundo} ${COR[l.item.situacao]?.faixa} ${COR[l.item.situacao]?.texto}`}>
+                <Link
+                  href={`/agenda/horario/${l.item.agendamentoId}?data=${data}`}
+                  className={`block flex-1 rounded-xl border-l-4 px-4 py-3 ${COR[l.item.situacao]?.fundo} ${COR[l.item.situacao]?.faixa} ${COR[l.item.situacao]?.texto}`}
+                >
                   <p className="text-sm font-semibold">{l.item.cliente ?? "Cliente"}</p>
                   <p className="text-sm opacity-80">
                     {l.item.servico} · até {minutosParaHora(l.item.fim)}
                   </p>
                   <p className="mt-1 text-xs font-medium">{NOME_SITUACAO[l.item.situacao]}</p>
-                </div>
+                </Link>
               </li>
             ),
           )}

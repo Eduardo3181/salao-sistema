@@ -309,6 +309,20 @@ describe("Bloqueios", () => {
   });
 });
 
+describe("Pode mexer no agendamento (para os botões da tela)", () => {
+  it("responde igual à regra da porta", async () => {
+    const pode = async (quem: string, ag: string) => {
+      await como(quem);
+      return (await db.query("select public.pode_mexer_agendamento($1) as p", [ag])).rows[0].p;
+    };
+    expect(await pode(recepcaoA, agMisto)).toBe(true);
+    expect(await pode(anaUser, agMisto)).toBe(false); // tem serviço de outra profissional
+    expect(await pode(anaUser, agAna)).toBe(true);
+    expect(await pode(assistUser, agAna)).toBe(false);
+    expect(await pode(donoB, agAna)).toBe(false);
+  });
+});
+
 describe("Colunas da agenda", () => {
   it("cada perfil recebe só as colunas que pode ver", async () => {
     const colunas = async (quem: string) => {

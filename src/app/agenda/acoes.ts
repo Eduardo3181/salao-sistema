@@ -7,7 +7,13 @@ import { reaisParaCentavos } from "@/lib/dinheiro";
 import { exigirSalao } from "@/lib/sessao";
 import { normalizarTelefone } from "@/lib/telefone-data";
 
-export type ItemMarcacao = { servicoId: string; profissionalId: string; inicio: number; duracao: number };
+export type ItemMarcacao = {
+  servicoId: string;
+  profissionalId: string;
+  inicio: number;
+  duracao: number;
+  ignorarItemId?: string; // na remarcação: não contar o próprio horário como encaixe
+};
 type Resposta<T> = { ok: true; dados: T } | { ok: false; erro: string };
 
 /** Busca clientes pelo nome (ou telefone, para quem pode ver telefone). A função do banco aplica as regras. */
@@ -112,6 +118,7 @@ export async function avisosDaMarcacao(data: string, itens: ItemMarcacao[]): Pro
       p_profissional_id: it.profissionalId,
       p_inicio: horarioComFuso(data, it.inicio),
       p_fim: horarioComFuso(data, fim),
+      p_ignorar_item: it.ignorarItemId ?? null,
     });
     const conflitos = c as { atendimentos: number; bloqueios: number } | null;
     if (conflitos?.atendimentos) avisos.push(`${nome} já tem horário marcado entre ${faixa} (encaixe).`);
@@ -153,4 +160,59 @@ export async function marcarHorario(clienteId: string, data: string, itens: Item
   }
   revalidatePath("/agenda");
   return { ok: true, dados: { data } };
+}
+
+const SITUACOES = ["agendado", "confirmado", "chegou", "concluido", "faltou", "cancelado"] as const;
+const MOTIVOS = ["cliente_desmarcou", "salao_desmarcou", "outro"] as const;
+export type Situacao = (typeof SITUACOES)[number];
+export type MotivoCancelamento = (typeof MOTIVOS)[number];
+
+/** Muda a situação (inclui cancelar). A porta do banco confere quem pode e o motivo obrigatório. */
+export async function mudarSituacao(
+  agendamentoId: string,
+  situacao: Situacao,
+  motivo: MotivoCancelamento | null,
+): Promise<Resposta<null>> {
+  const { supabase } = await exigirSalao();
+  if (!SITUACOES.includes(situacao)) return { ok: false, erro: "Situação inválida." };
+  if (motivo !== null && !MOTIVOS.includes(motivo)) return { ok: false, erro: "Motivo inválido." };
+
+  const { error } = await supabase.rpc("mudar_situacao_agendamento", {
+    p_agendamento_id: agendamentoId,
+    p_situacao: situacao,
+    p_motivo: motivo,
+  });
+  if (error) {
+    console.error("mudarSituacao falhou:", error.code);
+    return { ok: false, erro: error.code === "42501" || error.code === "22023" ? error.message : "Não foi possível alterar. Tente de novo." };
+  }
+  revalidatePath("/agenda");
+  return { ok: true, dados: null };
+}
+
+/** Remarca um serviço (dia, hora, duração e, para dono/recepção, a profissional). */
+export async function remarcar(
+  itemId: string,
+  data: string,
+  inicio: number,
+  duracao: number,
+  profissionalId: string,
+): Promise<Resposta<null>> {
+  const { supabase } = await exigirSalao();
+  if (!dataValida(data)) return { ok: false, erro: "Data inválida." };
+  if (!Number.isInteger(inicio) || inicio < 0 || inicio >= 24 * 60) return { ok: false, erro: "Horário inválido." };
+  if (!Number.isInteger(duracao) || duracao < 5 || duracao > 720) return { ok: false, erro: "Duração inválida." };
+
+  const { error } = await supabase.rpc("remarcar_item", {
+    p_item_id: itemId,
+    p_inicio: horarioComFuso(data, inicio),
+    p_profissional_id: profissionalId,
+    p_duracao_min: duracao,
+  });
+  if (error) {
+    console.error("remarcar falhou:", error.code);
+    return { ok: false, erro: error.code === "42501" || error.code === "22023" ? error.message : "Não foi possível remarcar. Tente de novo." };
+  }
+  revalidatePath("/agenda");
+  return { ok: true, dados: null };
 }

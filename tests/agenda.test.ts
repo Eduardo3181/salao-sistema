@@ -309,6 +309,19 @@ describe("Bloqueios", () => {
   });
 });
 
+describe("Colunas da agenda", () => {
+  it("cada perfil recebe só as colunas que pode ver", async () => {
+    const colunas = async (quem: string) => {
+      await como(quem);
+      return (await db.query("select id from public.minhas_agendas($1)", [salaoA])).rows.map((r) => r.id).sort();
+    };
+    expect(await colunas(recepcaoA)).toEqual([ana, bia, carla].sort());
+    expect(await colunas(anaUser)).toEqual([ana]);
+    expect(await colunas(assistUser)).toEqual([ana]);
+    expect(await colunas(donoB)).toEqual([]);
+  });
+});
+
 describe("Regra geral", () => {
   it("nenhuma tabela do sistema está sem RLS", async () => {
     await comoAdmin();

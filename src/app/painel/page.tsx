@@ -91,7 +91,7 @@ async function Painel() {
     id === userId ? "por você" : id && nomePorUsuario.get(id) ? `por ${nomePorUsuario.get(id)}` : "pelo sistema";
 
   return (
-    <div className="flex flex-1 flex-col bg-stone-100">
+    <div className="flex flex-1 flex-col bg-stone-100 pb-20 md:pb-0 md:pl-56">
       <Cabecalho salao={salao} atual="/painel" />
 
       <main className="mx-auto w-full max-w-3xl flex-1 space-y-6 px-4 py-6">

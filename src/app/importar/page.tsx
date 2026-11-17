@@ -21,7 +21,7 @@ async function Importar() {
   if (!ehDono) redirect("/painel");
 
   return (
-    <div className="flex flex-1 flex-col bg-stone-100">
+    <div className="flex flex-1 flex-col bg-stone-100 pb-20 md:pb-0 md:pl-56">
       <Cabecalho salao={salao} atual="/configuracoes" />
       <main className="mx-auto w-full max-w-3xl flex-1 space-y-6 px-4 py-6">
         <div>

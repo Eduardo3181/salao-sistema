@@ -87,3 +87,10 @@ Base: `docs/referencia-salon-soft/` (só local, fora do GitHub; é referência d
 8. **Suporte:** proposta em `docs/08-suporte.md`; perguntas da seção 9 feitas à dona.
 9. **Acesso da equipe de suporte à conta do salão:** depois do lançamento.
 Também: **alterar senha e "esqueci minha senha"** entram no MVP (segurança básica).
+
+## Visual do sistema (decisão da dona, 17/11/2026)
+- **Modelo A no computador + Modelo C no celular** (mesmo sistema, ajusta sozinho ao tamanho da tela).
+- Computador: menu lateral claro com ícones e nomes; agenda em colunas por profissional, com inicial no topo, cores por situação com legenda, cinza fora do expediente, bloqueios listrados e linha da hora atual.
+- Celular: barra embaixo (Início, Agenda, Clientes, Mais), agenda em lista com uma profissional por vez.
+- Tom rosé e neutros; ícones da biblioteca gratuita Lucide (licença ISC), versão fixa com pelo menos 2 semanas de lançada.
+- Referências estudadas (Salon Soft, Trinks, Avec, Graces, Belasis, Microvix) só para ideias de funções; nada de layout, cores, ícones ou textos copiados (regra 9).

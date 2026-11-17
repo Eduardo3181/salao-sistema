@@ -20,7 +20,7 @@ Foco: Agenda, Comanda, Comissão e Caixa funcionando com perfeição.
 - Agendamento online (link para a cliente).
 
 ## Extras vendidos à parte (add-ons)
-- Lembretes e mensagens por WhatsApp (custo por uso).
+- Lembretes e mensagens por WhatsApp: aniversário, lembrete de horário e lembrete de retorno. Detalhes e decisões em `docs/07-lembretes-whatsapp.md`. Depois do lançamento; começa pela Fase 1 (lista "Para chamar hoje" com botão que abre o WhatsApp, sem custo); o envio automático (Fase 2, custo por uso) vem depois.
 - Nota fiscal de serviço (NFS-e).
 - Agendamento online com sinal por Pix.
 

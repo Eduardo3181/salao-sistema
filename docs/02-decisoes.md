@@ -123,6 +123,7 @@ Também: **alterar senha e "esqueci minha senha"** entram no MVP (segurança bá
 13. **Onde a comissão é calculada (caminho A, aprovado em 17/11/2026):** no servidor do sistema, com o mesmo motor testado (`src/lib/comissoes.ts`). Só o servidor grava comissões (chave secreta, nunca no navegador); ninguém da equipe cria ou altera comissão "na mão". Se o cálculo falhar no fechamento (ex.: assistente sem regra configurada), a comanda fica com "comissão pendente" e o dono ou a recepção tocam em "Calcular comissão agora".
 14. **Quem vê os valores de comissão:** o dono vê todos; cada profissional/assistente vê só os próprios. A recepção vê só que foram calculadas (sem valores). *Padrão adotado pelo sistema; a dona pode pedir para mudar.*
 15. **Estorno:** reabrir a comanda não apaga nada; cria lançamentos negativos que anulam o cálculo anterior. Ao fechar de novo, calcula com a regra do dia.
+16. **Extrato:** menu **Comissões**. O dono escolhe de quem ver; profissionais e assistentes veem só o próprio. Período livre com atalhos (esta semana, esta quinzena, este mês, mês passado), até 400 dias. Cada lançamento entra na data em que foi gravado; o estorno de uma comanda reaberta entra na data da reabertura. O assistente não vê o nome da cliente.
 
 ## Textos das telas (decisão da dona, 17/11/2026)
 - Usar "os profissionais", "o profissional", "o assistente", que abrangem todos os gêneros (muitos homens trabalham na área).

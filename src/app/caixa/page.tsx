@@ -31,6 +31,7 @@ type Resumo = {
   retiradas: number;
   comissoes_dinheiro: number;
   vales_dinheiro: number;
+  despesas_dinheiro: number;
   esperado_dinheiro: number;
   caixa: null | {
     id: string;
@@ -141,6 +142,7 @@ async function Caixa({ searchParams }: { searchParams: Promise<Record<string, st
                 <Linha rotulo="− Retiradas" valor={n(resumo.retiradas)} />
                 <Linha rotulo="− Comissões pagas em dinheiro" valor={n(resumo.comissoes_dinheiro)} />
                 <Linha rotulo="− Vales dados em dinheiro" valor={n(resumo.vales_dinheiro)} />
+                <Linha rotulo="− Despesas pagas em dinheiro" valor={n(resumo.despesas_dinheiro)} />
                 <li className="flex justify-between py-1.5 font-semibold">
                   <span>Deve ter na gaveta</span>
                   <span>{formatarReais(n(resumo.esperado_dinheiro))}</span>

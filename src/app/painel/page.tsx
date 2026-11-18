@@ -113,6 +113,21 @@ async function Painel() {
       : null;
   const caixaHojeAberto = caixas ? caixas.some((c) => c.data === hojeBrasilia()) : true;
   const caixaEsquecido = caixas ? caixas.find((c) => c.data < hojeBrasilia() && c.situacao === "aberto") : undefined;
+  // Aviso de contas (só o dono): vencem hoje ou estão atrasadas.
+  const contasPendentes = ehDono
+    ? (((
+        await supabase
+          .from("despesas")
+          .select("vencimento")
+          .eq("salao_id", salao.salaoId)
+          .lte("vencimento", hojeBrasilia())
+          .is("pago_em", null)
+          .is("cancelado_em", null)
+          .limit(500)
+      ).data ?? []) as { vencimento: string }[])
+    : [];
+  const contasAtrasadas = contasPendentes.filter((c) => c.vencimento < hojeBrasilia()).length;
+  const contasHoje = contasPendentes.length - contasAtrasadas;
   const nomePorUsuario = new Map(membros.map((m) => [m.user_id, m.nome ?? m.email]));
   const autor = (id: string | null) =>
     id === userId ? "por você" : id && nomePorUsuario.get(id) ? `por ${nomePorUsuario.get(id)}` : "pelo sistema";
@@ -130,6 +145,26 @@ async function Painel() {
             <TriangleAlert aria-hidden className="h-5 w-5 shrink-0" />
             <span className="flex-1 text-sm">
               <strong>O caixa de {caixaEsquecido.data.split("-").reverse().join("/")} ficou aberto.</strong> Feche para conferir o dia.
+            </span>
+            <span className="text-sm font-semibold">Ver</span>
+          </Link>
+        )}
+        {(contasAtrasadas > 0 || contasHoje > 0) && (
+          <Link
+            href="/despesas"
+            className="flex items-center gap-3 rounded-2xl bg-red-50 px-5 py-4 text-red-900 shadow-sm ring-1 ring-red-200 hover:bg-red-100"
+          >
+            <TriangleAlert aria-hidden className="h-5 w-5 shrink-0" />
+            <span className="flex-1 text-sm">
+              <strong>
+                {[
+                  contasAtrasadas > 0 && (contasAtrasadas === 1 ? "1 conta atrasada" : `${contasAtrasadas} contas atrasadas`),
+                  contasHoje > 0 && (contasHoje === 1 ? "1 conta vence hoje" : `${contasHoje} contas vencem hoje`),
+                ]
+                  .filter(Boolean)
+                  .join(" e ")}
+                .
+              </strong>
             </span>
             <span className="text-sm font-semibold">Ver</span>
           </Link>

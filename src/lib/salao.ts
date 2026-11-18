@@ -198,6 +198,28 @@ export function descreverAuditoria(
     if (!r.antes?.cancelado_em && r.depois?.cancelado_em) return `Pagamento de comissão cancelado (${valor}): ${r.depois?.motivo_cancelamento ?? ""}`;
     return `Pagamento de comissão alterado (${valor})`;
   }
+  if (r.entidade === "despesas") {
+    const x = r.depois ?? r.antes;
+    const nome = `${x?.descricao ?? "despesa"} (${formatarReais(Number(x?.valor_centavos ?? 0))})`;
+    if (r.acao === "insert") return x?.fixa_id ? `Conta da despesa fixa gerada: ${nome}` : `Despesa registrada: ${nome}`;
+    if (!r.antes?.cancelado_em && r.depois?.cancelado_em) return `Despesa cancelada: ${nome}. Motivo: ${r.depois?.motivo_cancelamento ?? ""}`;
+    if (!r.antes?.pago_em && r.depois?.pago_em) return `Despesa paga: ${nome}`;
+    if (r.antes?.pago_em && !r.depois?.pago_em) return `Pagamento de despesa desfeito: ${nome}`;
+    return `Despesa alterada: ${nome}`;
+  }
+  if (r.entidade === "despesas_fixas") {
+    const x = r.depois ?? r.antes;
+    const nome = `${x?.descricao ?? "despesa fixa"} (${formatarReais(Number(x?.valor_centavos ?? 0))})`;
+    if (r.acao === "insert") return `Despesa fixa criada: ${nome}, todo dia ${x?.dia_vencimento}`;
+    if (r.antes?.ativa && !r.depois?.ativa) return `Despesa fixa encerrada: ${nome}`;
+    return `Despesa fixa alterada: ${nome}`;
+  }
+  if (r.entidade === "categorias_despesa") {
+    const x = r.depois ?? r.antes;
+    if (r.acao === "insert") return `Categoria de despesa criada: ${x?.nome ?? ""}`;
+    if (r.antes?.ativo !== r.depois?.ativo) return `Categoria de despesa ${r.depois?.ativo ? "reativada" : "desativada"}: ${x?.nome ?? ""}`;
+    return `Categoria de despesa alterada: ${x?.nome ?? ""}`;
+  }
   if (r.entidade === "caixas") {
     const x = r.depois ?? r.antes;
     const dia = String(x?.data ?? "").split("-").reverse().join("/");

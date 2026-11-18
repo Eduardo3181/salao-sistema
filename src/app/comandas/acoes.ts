@@ -1,6 +1,7 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
+import { calcularComissoesDaComanda } from "@/lib/comissoes-servidor";
 import { reaisParaCentavos } from "@/lib/dinheiro";
 import { exigirSalao } from "@/lib/sessao";
 
@@ -189,7 +190,7 @@ export async function receberPagamento(
   if (entregue === "erro") return { ok: false, erro: "Valor entregue inválido." };
   if (entregue !== null && entregue < valor) return { ok: false, erro: "O valor entregue é menor que o valor a pagar." };
 
-  const { supabase } = await exigirSalao();
+  const { supabase, salao } = await exigirSalao();
   const { data, error } = await supabase.rpc("registrar_pagamento", {
     p_comanda_id: comandaId,
     p_forma: forma,
@@ -201,18 +202,27 @@ export async function receberPagamento(
     console.error("receberPagamento falhou:", error.code);
     return { ok: false, erro: erroDoBanco(error.code, error.message, "Não foi possível registrar. Tente de novo.") };
   }
+  const fechou = Boolean((data as { fechou: boolean }).fechou);
+  if (fechou) await calcularAoFechar(salao.salaoId, comandaId);
   revalidatePath("/comandas");
   revalidatePath(`/comandas/${comandaId}`);
-  return { ok: true, dados: { fechou: Boolean((data as { fechou: boolean }).fechou), troco: entregue !== null ? entregue - valor : 0 } };
+  return { ok: true, dados: { fechou, troco: entregue !== null ? entregue - valor : 0 } };
+}
+
+/** Calcula a comissão logo depois de fechar. Se falhar, a comanda fica com "comissão pendente" (não desfaz o fechamento). */
+async function calcularAoFechar(salaoId: string, comandaId: string) {
+  const r = await calcularComissoesDaComanda(salaoId, comandaId);
+  if (!r.ok) console.error("comissão ficou pendente na comanda");
 }
 
 export async function fecharComanda(comandaId: string): Promise<Resposta<null>> {
-  const { supabase } = await exigirSalao();
+  const { supabase, salao } = await exigirSalao();
   const { error } = await supabase.rpc("fechar_comanda", { p_comanda_id: comandaId });
   if (error) {
     console.error("fecharComanda falhou:", error.code);
     return { ok: false, erro: erroDoBanco(error.code, error.message, "Não foi possível fechar. Tente de novo.") };
   }
+  await calcularAoFechar(salao.salaoId, comandaId);
   revalidatePath("/comandas");
   revalidatePath(`/comandas/${comandaId}`);
   return { ok: true, dados: null };
@@ -239,4 +249,19 @@ export async function reabrirComanda(comandaId: string, motivo: string): Promise
   revalidatePath("/comandas");
   revalidatePath(`/comandas/${comandaId}`);
   return { ok: true, dados: null };
+}
+
+/**
+ * Calcula de novo uma comissão que ficou pendente (dono ou recepção).
+ * Confere com o login da pessoa que a comanda é visível para ela antes de usar o servidor.
+ */
+export async function calcularComissaoPendente(comandaId: string): Promise<Resposta<null>> {
+  const { supabase, salao } = await exigirSalao();
+  if (salao.perfil !== "dono" && salao.perfil !== "recepcao") return { ok: false, erro: "Só o dono ou a recepção podem fazer isso." };
+  const { data: c } = await supabase.from("comandas").select("id").eq("id", comandaId).eq("salao_id", salao.salaoId).maybeSingle();
+  if (!c) return { ok: false, erro: "Comanda não encontrada." };
+  const r = await calcularComissoesDaComanda(salao.salaoId, comandaId);
+  revalidatePath("/comandas");
+  revalidatePath(`/comandas/${comandaId}`);
+  return r.ok ? { ok: true, dados: null } : r;
 }

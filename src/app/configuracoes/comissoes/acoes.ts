@@ -50,7 +50,7 @@ export async function salvarComissoes(f: FormComissoes): Promise<Resposta> {
         assistente_base: a.base,
         assistente_valor: valor,
         assistente_quem_paga: a.quemPaga,
-        assistente_percentual_profissional: a.quemPaga === "dividido" ? pct(a.percentualDaProfissional, "Parte que sai da profissional") : null,
+        assistente_percentual_profissional: a.quemPaga === "dividido" ? pct(a.percentualDaProfissional, "Parte que sai do profissional") : null,
       };
     }
     config = {
@@ -61,7 +61,7 @@ export async function salvarComissoes(f: FormComissoes): Promise<Resposta> {
       ...assistente,
     };
     for (const [id, t] of Object.entries(f.porProfissional))
-      if (t.trim()) desejadas.set(`${id}:`, { profissional_id: id, servico_id: null, percentual: pct(t, "Comissão da profissional") });
+      if (t.trim()) desejadas.set(`${id}:`, { profissional_id: id, servico_id: null, percentual: pct(t, "Comissão do profissional") });
     for (const [id, t] of Object.entries(f.porServico))
       if (t.trim()) desejadas.set(`:${id}`, { profissional_id: null, servico_id: id, percentual: pct(t, "Comissão do serviço") });
     for (const x of f.porProfissionalServico) {

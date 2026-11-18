@@ -139,7 +139,7 @@ export function calcularComissaoItem(e: EntradaItem): ResultadoItem {
   if (ids.length === 0) return vazio;
 
   const r = e.regraAssistente;
-  if (!r) throw new ErroComissao("Há assistente no serviço, mas o salão não configurou como pagar assistentes.");
+  if (!r) throw new ErroComissao("Há assistente no serviço, mas o salão ainda não configurou como pagar assistentes. Ajuste em Configurações > Comissões.");
   if (!Number.isSafeInteger(r.valor) || r.valor < 0) throw new ErroComissao("Regra de assistente inválida.");
   if (r.base !== "valor_fixo" && r.valor > CEM_POR_CENTO) throw new ErroComissao("Parte da assistente acima de 100%.");
 
@@ -161,7 +161,7 @@ export function calcularComissaoItem(e: EntradaItem): ResultadoItem {
 
   // A soma dos repasses não pode passar da comissão da profissional.
   if (daProfissional > bruta)
-    throw new ErroComissao("A parte da assistente passa da comissão da profissional. Ajuste a regra da assistente.");
+    throw new ErroComissao("A parte do assistente passa da comissão do profissional. Ajuste a regra do assistente.");
 
   return {
     ...vazio,

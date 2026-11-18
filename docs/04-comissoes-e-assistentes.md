@@ -43,6 +43,7 @@ Serviço de R$ 200, profissional com 50% de comissão, assistente com 20% da com
 
 ## Implementação
 - Função pura `calcularComissoes(item, configuracao, regras)`, sem acesso a tela ou banco, com testes automáticos para cada modelo pronto, arredondamento, estorno e limites.
+- Comanda inteira: `src/lib/comissoes-comanda.ts` (puro) monta os lançamentos; `src/lib/comissoes-servidor.ts` lê os dados e grava pela função `gravar_comissoes`, que só o servidor pode chamar. Lançamentos ficam em `comissoes` (estorno = linha negativa ligada à original).
 - Matriz de testes cobrindo todas as combinações válidas; combinações inválidas são barradas na configuração.
 
 ## Atenção trabalhista

@@ -45,7 +45,21 @@ async function Comandas({ searchParams }: { searchParams: Promise<Record<string,
     aba === "abertas"
       ? consulta.eq("situacao", "aberta").order("aberta_em")
       : consulta.eq("situacao", "fechada").gte("fechada_em", inicioDoDia(hojeBrasilia())).order("fechada_em", { ascending: false });
-  const { data } = await consulta.limit(200);
+  const [{ data }, { data: pendR }] = await Promise.all([
+    consulta.limit(200),
+    // Comandas fechadas com comissão ainda não calculada (aviso para dono e recepção).
+    souProfissional
+      ? Promise.resolve({ data: [] })
+      : supabase
+          .from("comandas")
+          .select("id, clientes(nome)")
+          .eq("salao_id", salao.salaoId)
+          .eq("situacao", "fechada")
+          .is("comissao_calculada_em", null)
+          .order("fechada_em")
+          .limit(20),
+  ]);
+  const pendentes = (pendR ?? []) as unknown as { id: string; clientes: { nome: string } | null }[];
   const comandas = (data ?? []) as unknown as Linha[];
   // Início de hoje no horário de Brasília (para marcar comandas de dias anteriores).
   const inicioHoje = Date.parse(inicioDoDia(hojeBrasilia()));
@@ -72,6 +86,20 @@ async function Comandas({ searchParams }: { searchParams: Promise<Record<string,
             <Plus aria-hidden className="h-4 w-4" /> Nova comanda
           </Link>
         </div>
+
+        {pendentes.length > 0 && (
+          <div className="rounded-xl bg-amber-50 p-4 text-sm text-amber-900 ring-1 ring-amber-200">
+            <p className="font-semibold">Comissão pendente em {pendentes.length === 1 ? "1 comanda fechada" : `${pendentes.length} comandas fechadas`}</p>
+            <p className="mt-1">Abra a comanda e toque em &quot;Calcular comissão agora&quot;.</p>
+            <ul className="mt-2 flex flex-wrap gap-2">
+              {pendentes.map((p) => (
+                <li key={p.id}>
+                  <Link href={`/comandas/${p.id}`} className="font-medium underline">{p.clientes?.nome ?? "Cliente"}</Link>
+                </li>
+              ))}
+            </ul>
+          </div>
+        )}
 
         <nav className="flex gap-2" aria-label="Abas">
           <Link href="/comandas" className={abaClasse(aba === "abertas")}>Abertas</Link>

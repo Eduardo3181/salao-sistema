@@ -93,7 +93,7 @@ async function Bloqueios({ searchParams }: { searchParams: Promise<Record<string
           />
         ) : (
           <p className="rounded-2xl bg-white p-5 text-sm text-stone-600 shadow-sm ring-1 ring-stone-200">
-            Quem cria bloqueios é a profissional (na própria agenda), a recepção ou o dono.
+            Quem cria bloqueios é o profissional (na própria agenda), a recepção ou o dono.
           </p>
         )}
 

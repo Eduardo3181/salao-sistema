@@ -11,7 +11,7 @@ import { buscarProfissionais } from "@/lib/profissionais";
 import { buscarCatalogo } from "@/lib/servicos";
 import { exigirSalao } from "@/lib/sessao";
 import { AcoesItem, CancelarComanda, DescontoGeral, Lancar } from "./editor";
-import { FecharSemValor, ReabrirComanda, Receber, RemoverPagamento } from "./pagamento";
+import { CalcularComissao, FecharSemValor, ReabrirComanda, Receber, RemoverPagamento } from "./pagamento";
 import { linkWhatsApp } from "@/lib/telefone-data";
 import { MessageCircle } from "lucide-react";
 
@@ -38,10 +38,10 @@ async function Comanda({ params }: { params: Promise<{ id: string }> }) {
   const { supabase, salao } = await exigirSalao();
   if (salao.perfil === "assistente") redirect("/painel");
 
-  const [{ data: c }, itens, { data: resumoR }, { data: pagR }, catalogo, produtosR, equipe, { data: minhas }, { data: telefone }] = await Promise.all([
+  const [{ data: c }, itens, { data: resumoR }, { data: pagR }, catalogo, produtosR, equipe, { data: minhas }, { data: telefone }, { data: comR }] = await Promise.all([
     supabase
       .from("comandas")
-      .select("id, situacao, cliente_id, agendamento_id, aberta_em, fechada_em, cancelada_em, motivo_cancelamento, reaberta_em, motivo_reabertura, desconto_centavos, clientes(nome)")
+      .select("id, situacao, cliente_id, agendamento_id, aberta_em, fechada_em, cancelada_em, motivo_cancelamento, reaberta_em, motivo_reabertura, desconto_centavos, comissao_calculada_em, clientes(nome)")
       .eq("id", id)
       .maybeSingle(),
     buscarItensComanda(supabase, id),
@@ -53,6 +53,8 @@ async function Comanda({ params }: { params: Promise<{ id: string }> }) {
     supabase.rpc("minhas_agendas", { p_salao_id: salao.salaoId }),
     // Telefone: dono/recepção sempre; profissional só com a comanda aberta e item dela (regra no banco).
     supabase.rpc("telefone_da_comanda", { p_comanda_id: id }),
+    // Comissões: o dono vê todas; cada profissional só as suas; a recepção nenhuma (regra no banco).
+    supabase.from("comissoes").select("id, item_id, profissional_id, papel, valor_centavos, estorno_de").eq("comanda_id", id),
   ]);
   if (!c || !resumoR) notFound();
   const whatsapp = linkWhatsApp((telefone as string | null) ?? null);
@@ -74,6 +76,15 @@ async function Comanda({ params }: { params: Promise<{ id: string }> }) {
   const profissionais = equipe.filter((p) => p.ativo && p.tipo === "profissional").map((p) => ({ id: p.id, nome: p.nome }));
   const assistentes = equipe.filter((p) => p.ativo && p.tipo === "assistente").map((p) => ({ id: p.id, nome: p.nome }));
   const podeLancar = aberta && (recepcaoOuDono || minhaId !== null);
+
+  // Comissões ativas desta comanda (as estornadas na reabertura não contam).
+  type LinhaComissao = { id: string; item_id: string; profissional_id: string; papel: "profissional" | "assistente"; valor_centavos: number; estorno_de: string | null };
+  const linhasCom = (comR ?? []) as LinhaComissao[];
+  const estornadas = new Set(linhasCom.map((l) => l.estorno_de).filter(Boolean));
+  const comissoes = linhasCom.filter((l) => !l.estorno_de && !estornadas.has(l.id));
+  const nomeDe = new Map(equipe.map((p) => [p.id, p.nome]));
+  const nomeItem = new Map(itens.map((i) => [i.id, i.nome]));
+  const comissaoPendente = situacao === "fechada" && !c.comissao_calculada_em;
 
   return (
     <div className="flex flex-1 flex-col bg-stone-100 pb-20 md:pb-0 md:pl-56">
@@ -182,7 +193,7 @@ async function Comanda({ params }: { params: Promise<{ id: string }> }) {
             <DescontoGeral comandaId={id} atual={Number(c.desconto_centavos)} />
           )}
           {!verTudo && (
-            <p className="text-xs text-stone-500">Esta comanda tem itens de outra profissional. O total e o pagamento ficam com a recepção ou o dono.</p>
+            <p className="text-xs text-stone-500">Esta comanda tem itens de outro profissional. O total e o pagamento ficam com a recepção ou o dono.</p>
           )}
           {podeLancar && (
             <Lancar
@@ -234,6 +245,36 @@ async function Comanda({ params }: { params: Promise<{ id: string }> }) {
           <div className="px-1">
             <CancelarComanda comandaId={id} />
           </div>
+        )}
+        {situacao === "fechada" && (
+          <section className="space-y-3 rounded-2xl bg-white p-5 shadow-sm ring-1 ring-stone-200">
+            <h2 className="font-semibold text-stone-900">Comissões</h2>
+            {comissaoPendente ? (
+              recepcaoOuDono ? (
+                <CalcularComissao comandaId={id} />
+              ) : (
+                <p className="text-sm text-stone-500">A comissão desta comanda ainda não foi calculada.</p>
+              )
+            ) : comissoes.length > 0 ? (
+              <ul className="divide-y divide-stone-100 rounded-xl ring-1 ring-stone-200">
+                {comissoes.map((l) => (
+                  <li key={l.id} className="flex justify-between gap-3 px-4 py-3 text-sm">
+                    <span className="text-stone-800">
+                      {nomeDe.get(l.profissional_id) ?? "Profissional"}
+                      {l.papel === "assistente" ? " (assistente)" : ""}
+                      <span className="block text-xs text-stone-500">{nomeItem.get(l.item_id) ?? "Item"}</span>
+                    </span>
+                    <span className="font-medium text-stone-800">{formatarReais(Number(l.valor_centavos))}</span>
+                  </li>
+                ))}
+              </ul>
+            ) : (
+              <p className="text-sm text-stone-500">
+                {salao.perfil === "recepcao" ? "Comissões calculadas. Os valores ficam com o dono e com cada profissional." : "Nenhuma comissão nesta comanda."}
+              </p>
+            )}
+            {!comissaoPendente && <p className="text-xs text-stone-500">Calculadas com a regra do dia do fechamento. Se a comanda for reaberta, são desfeitas e calculadas de novo ao fechar.</p>}
+          </section>
         )}
         {situacao === "fechada" && recepcaoOuDono && (
           <div className="px-1">

@@ -136,7 +136,7 @@ function SemColunas({ perfil }: { perfil: string }) {
   return (
     <section className="rounded-2xl bg-white p-6 text-stone-600 shadow-sm ring-1 ring-stone-200">
       {perfil === "dono"
-        ? "Ninguém cadastrado em Quem atende ainda. Cadastre as profissionais (e você, se atende) para a agenda ganhar as colunas."
+        ? "Ninguém cadastrado em Quem atende ainda. Cadastre os profissionais (e você, se atende) para a agenda ganhar as colunas."
         : perfil === "profissional"
           ? "Sua conta ainda não está ligada a um cadastro em Quem atende. Peça ao dono do salão para fazer essa ligação."
           : perfil === "assistente"

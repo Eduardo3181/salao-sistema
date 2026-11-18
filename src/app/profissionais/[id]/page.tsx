@@ -59,7 +59,7 @@ async function Conteudo({ params }: { params: Promise<{ id: string }> }) {
         <div className="border-t border-stone-200 pt-6">
           <h2 className="font-semibold text-stone-900">Quem ela ajuda</h2>
           <p className="mt-1 mb-4 text-sm text-stone-500">
-            Ela vê no app só a agenda das profissionais marcadas, sem telefone nem ficha das clientes, e não altera nada.
+            Vê no app só a agenda dos profissionais marcados, sem telefone nem ficha das clientes, e não altera nada.
             {profissional.user_id ? "" : " Para entrar no app, ela precisa ter acesso (perfil Assistente na Equipe) e estar ligada a este cadastro acima."}
           </p>
           <FormAjuda assistenteId={id} profissionais={paraEscolher} marcadas={marcadas} />

@@ -95,7 +95,7 @@ async function Configuracoes({ searchParams }: { searchParams: Promise<Record<st
             <span>
               <span className="block text-sm font-medium text-stone-900">Profissionais podem mudar o preço e dar desconto na comanda</span>
               <span className="block text-xs text-stone-500">
-                Começa desligado. Dono e recepção sempre podem. Ligado: a profissional muda o preço e dá desconto só nos próprios itens.
+                Começa desligado. Dono e recepção sempre podem. Ligado: o profissional muda o preço e dá desconto só nos próprios itens.
               </span>
             </span>
           </label>
@@ -109,7 +109,7 @@ async function Configuracoes({ searchParams }: { searchParams: Promise<Record<st
             <span>
               <span className="block text-sm font-medium text-stone-900">Profissionais podem receber pagamento e fechar a comanda</span>
               <span className="block text-xs text-stone-500">
-                Começa desligado. Dono e recepção sempre podem. Ligado: a profissional recebe só em comanda que tenha apenas itens dela.
+                Começa desligado. Dono e recepção sempre podem. Ligado: o profissional recebe só em comanda que tenha apenas itens dele.
               </span>
             </span>
           </label>
@@ -121,7 +121,7 @@ async function Configuracoes({ searchParams }: { searchParams: Promise<Record<st
 
         <section className="rounded-2xl bg-white p-6 shadow-sm ring-1 ring-stone-200">
           <h2 className="font-semibold text-stone-900">Comissões</h2>
-          <p className="mt-1 text-sm text-stone-500">% das profissionais, exceções por serviço, produtos, taxa do cartão e assistentes, com simulação.</p>
+          <p className="mt-1 text-sm text-stone-500">% dos profissionais, exceções por serviço, produtos, taxa do cartão e assistentes, com simulação.</p>
           <Link href="/configuracoes/comissoes" className="mt-4 inline-block rounded-lg px-4 py-2 text-sm font-semibold text-rose-700 ring-1 ring-rose-200 hover:bg-rose-50">
             Configurar comissões
           </Link>

@@ -54,20 +54,20 @@ export const MODELOS_ASSISTENTE: { id: string; nome: string; descricao: string; 
   { id: "sem", nome: "Sem assistentes", descricao: "O salão não paga comissão para assistentes.", regra: null },
   {
     id: "da_profissional",
-    nome: "Fixo mensal + comissão que sai da profissional",
-    descricao: "A assistente recebe uma % da comissão da profissional; o salão não tem custo extra por serviço.",
+    nome: "Fixo mensal + comissão que sai do profissional",
+    descricao: "O assistente recebe uma % da comissão do profissional; o salão não tem custo extra por serviço.",
     regra: { base: "percentual_comissao", valor: 2000, quemPaga: "profissional" },
   },
   {
     id: "salao_paga",
     nome: "Salão paga a assistente por fora",
-    descricao: "A assistente recebe uma % do valor do serviço, paga pelo salão; a profissional não perde nada.",
+    descricao: "O assistente recebe uma % do valor do serviço, paga pelo salão; o profissional não perde nada.",
     regra: { base: "percentual_servico", valor: 1000, quemPaga: "salao" },
   },
   {
     id: "valor_fixo",
     nome: "Valor fixo por serviço",
-    descricao: "A assistente recebe um valor fixo por serviço em que ajudou, descontado da profissional.",
+    descricao: "O assistente recebe um valor fixo por serviço em que ajudou, descontado do profissional.",
     regra: { base: "valor_fixo", valor: 1500, quemPaga: "profissional" },
   },
 ];

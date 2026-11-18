@@ -103,7 +103,7 @@ export default function FormComissoes({
       let regraAssistente: RegraAssistente | null = null;
       if (temAssist) {
         const v = base === "valor_fixo" ? reaisParaCentavos(valorAssist) : percentualParaCentesimos(valorAssist);
-        if (v === null) throw new ErroComissao("Confira o valor da assistente.");
+        if (v === null) throw new ErroComissao("Confira o valor do assistente.");
         regraAssistente = { base, valor: v, quemPaga, percentualDaProfissional: quemPaga === "dividido" ? p(percDaProf) : undefined };
       }
       const r = calcularComissaoItem({
@@ -121,9 +121,9 @@ export default function FormComissoes({
   }, [padrao, porProf, porServ, porProfServ, simProf, simServ, simValor, simForma, simAssist, temAssist, base, valorAssist, quemPaga, percDaProf, descontarTaxa, taxas]);
 
   const ORIGEM: Record<string, string> = {
-    profissional_servico: "exceção desta profissional neste serviço",
+    profissional_servico: "exceção deste profissional neste serviço",
     servico: "exceção do serviço",
-    profissional: "% da profissional",
+    profissional: "% do profissional",
     padrao_salao: "padrão do salão",
   };
 
@@ -150,7 +150,7 @@ export default function FormComissoes({
     <div className="space-y-5">
       {/* Geral */}
       <section className={cartao}>
-        <h2 className="font-semibold text-stone-900">Comissão das profissionais</h2>
+        <h2 className="font-semibold text-stone-900">Comissão dos profissionais</h2>
         <label className="block max-w-xs">
           <span className="text-sm text-stone-700">Padrão do salão (%)</span>
           <input inputMode="decimal" value={padrao} placeholder="ex.: 50" onChange={(e) => mudou(setPadrao)(e.target.value)} className={`${campo} mt-1`} />
@@ -181,7 +181,7 @@ export default function FormComissoes({
           <input type="checkbox" checked={descontarTaxa} onChange={(e) => mudou(setDescontarTaxa)(e.target.checked)} className="mt-1 h-5 w-5 shrink-0 accent-rose-700" />
           <span>
             <span className="block text-sm font-medium text-stone-900">Descontar a taxa do cartão antes de calcular a comissão</span>
-            <span className="block text-xs text-stone-500">Desligado: o salão paga a taxa sozinho. Ligado: a comissão é sobre o valor menos a taxa (vale também para a assistente).</span>
+            <span className="block text-xs text-stone-500">Desligado: o salão paga a taxa sozinho. Ligado: a comissão é sobre o valor menos a taxa (vale também para o assistente).</span>
           </span>
         </label>
 
@@ -206,7 +206,7 @@ export default function FormComissoes({
       <section className={cartao}>
         <h2 className="font-semibold text-stone-900">Exceções por serviço</h2>
         <p className="text-sm text-stone-500">
-          Um serviço pode ter % diferente (ex.: coloração 30%). A regra mais específica vence: profissional + serviço, depois serviço, depois a % da profissional, depois o padrão.
+          Um serviço pode ter % diferente (ex.: coloração 30%). A regra mais específica vence: profissional + serviço, depois serviço, depois a % do profissional, depois o padrão.
         </p>
         <details className="rounded-lg ring-1 ring-stone-200" open={Object.values(porServ).some((v) => v)}>
           <summary className="cursor-pointer px-3 py-2.5 text-sm font-medium text-stone-800">% por serviço ({servicos.length} serviços)</summary>
@@ -221,7 +221,7 @@ export default function FormComissoes({
         </details>
 
         <div className="space-y-2">
-          <p className="text-sm font-medium text-stone-800">Exceção de uma profissional em um serviço</p>
+          <p className="text-sm font-medium text-stone-800">Exceção de um profissional em um serviço</p>
           {porProfServ.map((x, i) => (
             <div key={i} className="flex flex-wrap items-end gap-2">
               <select value={x.profissionalId} onChange={(e) => mudou(setPorProfServ)(porProfServ.map((y, j) => (j === i ? { ...y, profissionalId: e.target.value } : y)))} className={`${campo} w-auto`}>
@@ -247,7 +247,7 @@ export default function FormComissoes({
       {/* Assistentes */}
       <section className={cartao}>
         <h2 className="font-semibold text-stone-900">Assistentes</h2>
-        {!temAssistentes && <p className="text-sm text-stone-500">Nenhuma assistente cadastrada em Quem atende. Pode deixar em &quot;Sem assistentes&quot;.</p>}
+        {!temAssistentes && <p className="text-sm text-stone-500">Nenhum assistente cadastrado em Quem atende. Pode deixar em &quot;Sem assistentes&quot;.</p>}
         <div className="grid gap-2 sm:grid-cols-2">
           {MODELOS_ASSISTENTE.map((m) => {
             const ativo = m.regra ? temAssist && base === m.regra.base && quemPaga === m.regra.quemPaga : !temAssist;
@@ -263,9 +263,9 @@ export default function FormComissoes({
         {temAssist && (
           <div className="grid gap-3 rounded-xl bg-stone-50 p-4 ring-1 ring-stone-200 sm:grid-cols-2">
             <label className="block">
-              <span className="text-sm text-stone-700">A parte da assistente é</span>
+              <span className="text-sm text-stone-700">A parte do assistente é</span>
               <select value={base} onChange={(e) => mudou(setBase)(e.target.value as RegraAssistente["base"])} className={`${campo} mt-1`}>
-                <option value="percentual_comissao">% da comissão da profissional</option>
+                <option value="percentual_comissao">% da comissão do profissional</option>
                 <option value="percentual_servico">% do valor do serviço</option>
                 <option value="valor_fixo">Valor fixo por serviço (R$)</option>
               </select>
@@ -277,19 +277,19 @@ export default function FormComissoes({
             <label className="block">
               <span className="text-sm text-stone-700">Quem paga</span>
               <select value={quemPaga} onChange={(e) => mudou(setQuemPaga)(e.target.value as RegraAssistente["quemPaga"])} className={`${campo} mt-1`}>
-                <option value="profissional">Sai da comissão da profissional</option>
+                <option value="profissional">Sai da comissão do profissional</option>
                 <option value="salao">O salão paga por fora</option>
                 <option value="dividido">Dividido entre os dois</option>
               </select>
             </label>
             {quemPaga === "dividido" && (
               <label className="block">
-                <span className="text-sm text-stone-700">Parte que sai da profissional (%)</span>
+                <span className="text-sm text-stone-700">Parte que sai do profissional (%)</span>
                 <input inputMode="decimal" value={percDaProf} onChange={(e) => mudou(setPercDaProf)(e.target.value)} className={`${campo} mt-1`} />
               </label>
             )}
             <p className="text-xs text-stone-500 sm:col-span-2">
-              Com mais de uma assistente no serviço, essa parte é dividida igualmente entre elas. O fixo mensal (se houver) é combinado à parte; o sistema não calcula encargos trabalhistas: confira com o contador.
+              Com mais de um assistente no serviço, essa parte é dividida igualmente entre elas. O fixo mensal (se houver) é combinado à parte; o sistema não calcula encargos trabalhistas: confira com o contador.
             </p>
           </div>
         )}
@@ -357,7 +357,7 @@ export default function FormComissoes({
             ))}
             <div className="flex justify-between border-t border-rose-200 pt-1 font-semibold"><dt>Profissional recebe</dt><dd>{formatarReais(simulacao.r.comissaoProfissionalCentavos)}</dd></div>
             {simulacao.r.repasseSalaoCentavos > 0 && (
-              <div className="flex justify-between text-stone-600"><dt>Salão paga às assistentes por fora</dt><dd>{formatarReais(simulacao.r.repasseSalaoCentavos)}</dd></div>
+              <div className="flex justify-between text-stone-600"><dt>Salão paga aos assistentes por fora</dt><dd>{formatarReais(simulacao.r.repasseSalaoCentavos)}</dd></div>
             )}
           </dl>
         ) : (

@@ -17,7 +17,7 @@ export default function FormAjuda({
   const [estado, acao, carregando] = useActionState(salvarAjudaAssistente, undefined);
 
   if (profissionais.length === 0)
-    return <p className="text-sm text-stone-500">Cadastre primeiro as profissionais em Quem atende.</p>;
+    return <p className="text-sm text-stone-500">Cadastre primeiro os profissionais em Quem atende.</p>;
 
   return (
     <form action={acao} className="space-y-4">

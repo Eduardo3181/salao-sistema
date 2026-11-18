@@ -109,7 +109,7 @@ export async function avisosDaMarcacao(data: string, itens: ItemMarcacao[]): Pro
   const agora = data === hojeBrasilia() ? minutosNoDia(new Date().toISOString(), data) : data < hojeBrasilia() ? 24 * 60 : -1;
 
   for (const it of itens) {
-    const nome = nomes.get(it.profissionalId) ?? "A profissional";
+    const nome = nomes.get(it.profissionalId) ?? "O profissional";
     const fim = it.inicio + it.duracao;
     const faixa = `${minutosParaHora(it.inicio)}–${minutosParaHora(fim)}`;
 

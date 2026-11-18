@@ -6,7 +6,7 @@ import { useState, useTransition } from "react";
 import { Mensagem } from "@/components/ui";
 import { NOME_FORMA, type FormaPagamento } from "@/lib/comandas";
 import { centavosParaTexto, formatarReais, reaisParaCentavos } from "@/lib/dinheiro";
-import { fecharComanda, reabrirComanda, receberPagamento, removerPagamento } from "../acoes";
+import { calcularComissaoPendente, fecharComanda, reabrirComanda, receberPagamento, removerPagamento } from "../acoes";
 
 const campo =
   "block w-full rounded-lg border border-stone-300 bg-white px-3 py-2.5 text-base text-stone-900 outline-none focus:border-rose-600 focus:ring-2 focus:ring-rose-200";
@@ -206,7 +206,7 @@ export function ReabrirComanda({ comandaId }: { comandaId: string }) {
   return (
     <div className="space-y-3 rounded-xl bg-amber-50 p-4 ring-1 ring-amber-200">
       <p className="font-semibold text-amber-900">Reabrir esta comanda?</p>
-      <p className="text-sm text-amber-900">Os pagamentos já recebidos continuam. Depois de ajustar, receba a diferença (se houver).</p>
+      <p className="text-sm text-amber-900">Os pagamentos já recebidos continuam. As comissões desta comanda são desfeitas e calculadas de novo quando ela fechar. Depois de ajustar, receba a diferença (se houver).</p>
       {erro && <Mensagem tipo="erro">{erro}</Mensagem>}
       <label className="block">
         <span className="text-sm text-amber-900">Motivo (fica registrado)</span>
@@ -230,6 +230,34 @@ export function ReabrirComanda({ comandaId }: { comandaId: string }) {
           {enviando ? "Reabrindo..." : "Reabrir comanda"}
         </button>
       </div>
+    </div>
+  );
+}
+
+/** Comissão que não foi calculada no fechamento (ex.: regra de assistente faltando). */
+export function CalcularComissao({ comandaId }: { comandaId: string }) {
+  const router = useRouter();
+  const [erro, setErro] = useState<string | null>(null);
+  const [enviando, iniciar] = useTransition();
+  return (
+    <div className="space-y-3 rounded-xl bg-amber-50 p-4 ring-1 ring-amber-200">
+      <p className="text-sm text-amber-900">A comissão desta comanda ainda não foi calculada.</p>
+      {erro && <Mensagem tipo="erro">{erro}</Mensagem>}
+      <button
+        type="button"
+        disabled={enviando}
+        onClick={() =>
+          iniciar(async () => {
+            setErro(null);
+            const r = await calcularComissaoPendente(comandaId);
+            if (!r.ok) return setErro(r.erro);
+            router.refresh();
+          })
+        }
+        className="rounded-lg bg-amber-700 px-4 py-2.5 text-sm font-semibold text-white hover:bg-amber-800 disabled:opacity-50"
+      >
+        {enviando ? "Calculando..." : "Calcular comissão agora"}
+      </button>
     </div>
   );
 }

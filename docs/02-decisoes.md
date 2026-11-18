@@ -120,3 +120,9 @@ Também: **alterar senha e "esqueci minha senha"** entram no MVP (segurança bá
 10. **Comprovante do pagamento:** PDF para baixar ou imprimir e a profissional assinar.
 11. **Reabrir comanda com comissão já paga:** permitido; a diferença entra como ajuste (a mais ou a menos) no próximo pagamento.
 12. **Extrato da profissional:** detalhe de cada serviço (valor, %, taxa descontada, parte da assistente).
+13. **Onde a comissão é calculada (caminho A, aprovado em 17/11/2026):** no servidor do sistema, com o mesmo motor testado (`src/lib/comissoes.ts`). Só o servidor grava comissões (chave secreta, nunca no navegador); ninguém da equipe cria ou altera comissão "na mão". Se o cálculo falhar no fechamento (ex.: assistente sem regra configurada), a comanda fica com "comissão pendente" e o dono ou a recepção tocam em "Calcular comissão agora".
+14. **Quem vê os valores de comissão:** o dono vê todos; cada profissional/assistente vê só os próprios. A recepção vê só que foram calculadas (sem valores). *Padrão adotado pelo sistema; a dona pode pedir para mudar.*
+15. **Estorno:** reabrir a comanda não apaga nada; cria lançamentos negativos que anulam o cálculo anterior. Ao fechar de novo, calcula com a regra do dia.
+
+## Textos das telas (decisão da dona, 17/11/2026)
+- Usar "os profissionais", "o profissional", "o assistente", que abrangem todos os gêneros (muitos homens trabalham na área).

@@ -50,7 +50,7 @@ Pendências anotadas na Etapa 1 (antes do piloto, salvo indicação):
 2. Configuração: comissão por profissional, exceções por serviço, produtos, taxa e regras de assistente; modelos prontos e simulação. (feito: Configurações > Comissões.)
 3. Calcular ao fechar a comanda (snapshot no item); desfazer ao reabrir/cancelar, com ajuste se já paga. (feito: calculada no servidor ao fechar; aparece na comanda; reabrir estorna; aviso de comissão pendente.)
 4. Extrato por período (dono e o próprio profissional). (feito: menu Comissões, com atalhos de semana, quinzena e mês.)
-5. Pagamento em lote com comprovante em PDF; cancelar pagamento com motivo.
+5. Pagamento em lote com comprovante em PDF; cancelar pagamento com motivo. (feito: Comissões > Pagar comissões; comprovante para imprimir ou salvar PDF.)
 6. Vales (adiantamentos) descontados à escolha do dono no pagamento.
 
 ## Etapa 6: caixa, despesas e relatórios

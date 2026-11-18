@@ -124,6 +124,9 @@ Também: **alterar senha e "esqueci minha senha"** entram no MVP (segurança bá
 14. **Quem vê os valores de comissão:** o dono vê todos; cada profissional/assistente vê só os próprios. A recepção vê só que foram calculadas (sem valores). *Padrão adotado pelo sistema; a dona pode pedir para mudar.*
 15. **Estorno:** reabrir a comanda não apaga nada; cria lançamentos negativos que anulam o cálculo anterior. Ao fechar de novo, calcula com a regra do dia.
 16. **Extrato:** menu **Comissões**. O dono escolhe de quem ver; profissionais e assistentes veem só o próprio. Período livre com atalhos (esta semana, esta quinzena, este mês, mês passado), até 400 dias. Cada lançamento entra na data em que foi gravado; o estorno de uma comanda reaberta entra na data da reabertura. O assistente não vê o nome da cliente.
+17. **Pagamento de comissões (17/11/2026):** o sistema só **registra** (meio e data); o Pix, a transferência ou o dinheiro são feitos pelo dono fora do sistema. Só o dono registra e cancela. Cada pagamento quita tudo o que está a pagar da pessoa até a data escolhida, inclusive estornos (ajuste); o valor é sempre a soma do extrato, nunca mais. Saldo zero ou negativo não é pago: fica para o próximo. Pagamento errado é **cancelado com motivo** (nada é apagado) e as comissões voltam a ficar a pagar. Vários profissionais podem ser pagos de uma vez.
+   A data do pagamento não pode ser antes das comissões que ele quita, nem no futuro.
+18. **Comprovante:** página para imprimir ou salvar em PDF pelo próprio navegador, com linha para assinatura à mão. É um recibo simples, **não é assinatura digital**; validade jurídica de assinatura é assunto para confirmar com o advogado. Pagamento cancelado aparece como CANCELADO, sem linha de assinatura.
 
 ## Textos das telas (decisão da dona, 17/11/2026)
 - Usar "os profissionais", "o profissional", "o assistente", que abrangem todos os gêneros (muitos homens trabalham na área).

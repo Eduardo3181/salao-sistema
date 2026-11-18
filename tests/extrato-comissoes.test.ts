@@ -6,7 +6,7 @@
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import { novaConexao } from "./apoio/banco";
 
-const { db, como, comoAdmin, deveFalhar, criarUsuario, criarSalao, colocarNaEquipe } = novaConexao();
+const { db, como, comoAdmin, comoServidor, deveFalhar, criarUsuario, criarSalao, colocarNaEquipe } = novaConexao();
 
 let donoA = "", donoB = "", recepcaoA = "", anaUser = "", carlaUser = "";
 let salaoA = "", salaoB = "";
@@ -18,11 +18,6 @@ const DE = "2000-01-01T00:00:00Z";
 const agoraMais = () => new Date(Date.now() + 86400000).toISOString();
 const DE_RECENTE = () => new Date(Date.now() - 86400000).toISOString();
 
-async function comoServidor() {
-  await db.query("reset role");
-  await db.query("select set_config('request.jwt.claims', $1, true)", [JSON.stringify({ role: "service_role" })]);
-  await db.query("set local role service_role");
-}
 
 beforeAll(async () => {
   await db.connect();

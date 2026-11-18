@@ -177,7 +177,7 @@ export function descreverAuditoria(
       r.antes?.assistente_quem_paga !== r.depois?.assistente_quem_paga ||
       r.antes?.assistente_percentual_profissional !== r.depois?.assistente_percentual_profissional
     )
-      m.push(r.depois?.assistente_base ? "regra das assistentes alterada" : "sem regra de assistentes");
+      m.push(r.depois?.assistente_base ? "regra dos assistentes alterada" : "sem regra de assistentes");
     return m.length ? `Comissões: ${m.join("; ")}` : "Comissões: configuração salva";
   }
   if (r.entidade === "regras_comissao") {
@@ -187,6 +187,13 @@ export function descreverAuditoria(
     if (r.acao === "delete") return `Exceção de comissão (${alvo}) removida`;
     if (r.acao === "insert") return `Exceção de comissão (${alvo}): ${pct(r.depois?.percentual)}`;
     return `Exceção de comissão (${alvo}): de ${pct(r.antes?.percentual)} para ${pct(r.depois?.percentual)}`;
+  }
+  if (r.entidade === "pagamentos_comissao") {
+    const x = r.depois ?? r.antes;
+    const valor = formatarReais(Number(x?.valor_centavos ?? 0));
+    if (r.acao === "insert") return `Pagamento de comissão registrado: ${valor}`;
+    if (!r.antes?.cancelado_em && r.depois?.cancelado_em) return `Pagamento de comissão cancelado (${valor}): ${r.depois?.motivo_cancelamento ?? ""}`;
+    return `Pagamento de comissão alterado (${valor})`;
   }
   if (r.entidade === "taxas_cartao") {
     const t = r.depois ?? r.antes;

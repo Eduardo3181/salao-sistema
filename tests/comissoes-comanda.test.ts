@@ -68,6 +68,33 @@ describe("Comissões da comanda", () => {
     expect(r.assistentes).toEqual([{ item_id: "i1", assistente_id: "carla", valor_centavos: 2000 }]);
   });
 
+  it("conta conferida à mão (17/11/2026): Coloração R$ 200 + Corte R$ 80 no débito a 1,99%", () => {
+    // Taxa: 1,99% de R$ 280 = R$ 5,572 → R$ 5,57 (557). Rateio: R$ 3,98 na coloração e R$ 1,59 no corte.
+    // Coloração: (200,00 − 3,98) × 50% = 98,01; assistente 20% de 98,01 = 19,602 → 19,60; Ana 98,01 − 19,60 = 78,41.
+    // Corte: (80,00 − 1,59) × 50% = 39,205 → 39,21 (meio centavo sobe).
+    const c: LinhaConfigComissao = {
+      ...config,
+      descontar_taxa_cartao: true,
+      assistente_base: "percentual_comissao",
+      assistente_valor: 2000,
+      assistente_quem_paga: "profissional",
+    };
+    const taxa = Math.floor((28000 * 199 + 5000) / 10000); // como o banco calcula a taxa do pagamento
+    expect(taxa).toBe(557);
+    const r = calcularComanda({
+      itens: [servico("color", "ana", 20000, ["carla"]), servico("corte", "ana", 8000)],
+      taxaTotalCentavos: taxa,
+      config: c,
+      regras: [],
+    });
+    expect(r.itens.map((i) => i.snapshot.taxaCentavos)).toEqual([398, 159]);
+    expect(r.lancamentos.map((l) => [l.item_id, l.profissional_id, l.valor_centavos])).toEqual([
+      ["color", "ana", 7841],
+      ["color", "carla", 1960],
+      ["corte", "ana", 3921],
+    ]);
+  });
+
   it("assistente sem regra configurada: o cálculo para com aviso claro", () => {
     expect(() => calcularComanda({ itens: [servico("i1", "ana", 20000, ["carla"])], taxaTotalCentavos: 0, config, regras: [] })).toThrow(ErroComissao);
   });

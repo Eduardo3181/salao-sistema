@@ -25,6 +25,13 @@ export function novaConexao() {
     await db.query("select set_config('request.jwt.claims', '', true)");
   }
 
+  /** Age como o servidor do sistema (chave secreta, papel service_role). */
+  async function comoServidor() {
+    await db.query("reset role");
+    await db.query("select set_config('request.jwt.claims', $1, true)", [JSON.stringify({ role: "service_role" })]);
+    await db.query("set local role service_role");
+  }
+
   /** Executa algo que DEVE falhar, sem estragar a transação do teste. */
   async function deveFalhar(sql: string, params: unknown[] = []) {
     await db.query("savepoint tentativa");
@@ -67,5 +74,5 @@ export function novaConexao() {
     ]);
   }
 
-  return { db, como, comoAdmin, deveFalhar, criarUsuario, criarSalao, colocarNaEquipe };
+  return { db, como, comoAdmin, comoServidor, deveFalhar, criarUsuario, criarSalao, colocarNaEquipe };
 }

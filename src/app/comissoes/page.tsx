@@ -33,6 +33,9 @@ type Linha = {
   taxa_centavos: number | null;
   parte_assistente_centavos: number | null;
   valor_centavos: number;
+  pago_em: string | null;
+  total_periodo_centavos: number;
+  quantidade_periodo: number;
 };
 
 const campo = "rounded-lg border border-stone-300 bg-white px-3 py-2 text-base text-stone-900 outline-none focus:border-rose-600 focus:ring-2 focus:ring-rose-200";
@@ -55,7 +58,9 @@ async function Extrato({ searchParams }: { searchParams: Promise<Record<string, 
     : { data: [], error: null };
   if (error) console.error("extrato falhou:", error.code);
   const linhas = ((data ?? []) as Linha[]).map((l) => ({ ...l, valor_centavos: Number(l.valor_centavos) }));
-  const total = linhas.reduce((s, l) => s + l.valor_centavos, 0);
+  // Total e quantidade vêm do banco (a lista pode vir cortada em 1000 linhas; o total não).
+  const total = linhas.length ? Number(linhas[0].total_periodo_centavos) : 0;
+  const quantidadeTotal = linhas.length ? Number(linhas[0].quantidade_periodo) : 0;
   const estornos = linhas.filter((l) => l.estorno);
 
   const link = (de: string, ate: string) => `/comissoes?de=${de}&ate=${ate}${escolhido && ehDono ? `&p=${escolhido.id}` : ""}`;
@@ -65,6 +70,16 @@ async function Extrato({ searchParams }: { searchParams: Promise<Record<string, 
     <div className="flex flex-1 flex-col bg-stone-100 pb-20 md:pb-0 md:pl-56">
       <Cabecalho salao={salao} atual="/comissoes" />
       <main className="mx-auto w-full max-w-3xl flex-1 space-y-4 px-4 py-5">
+        <div className="flex flex-wrap gap-2">
+          {ehDono && (
+            <Link href="/comissoes/pagar" className="rounded-lg bg-rose-700 px-4 py-2 text-sm font-semibold text-white hover:bg-rose-800">
+              Pagar comissões
+            </Link>
+          )}
+          <Link href="/comissoes/pagamentos" className="rounded-lg px-4 py-2 text-sm font-semibold text-rose-700 ring-1 ring-rose-200 hover:bg-rose-50">
+            {ehDono ? "Pagamentos registrados" : "Meus pagamentos"}
+          </Link>
+        </div>
         <div>
           <h1 className="text-xl font-semibold text-stone-900">{ehDono ? "Extrato de comissões" : "Minhas comissões"}</h1>
           <p className="text-sm text-stone-500">Comissões gravadas no fechamento das comandas. Comanda reaberta aparece como estorno na data da reabertura.</p>
@@ -126,10 +141,15 @@ async function Extrato({ searchParams }: { searchParams: Promise<Record<string, 
               </p>
               <p className="mt-1 text-3xl font-semibold text-stone-900">{formatarReais(total)}</p>
               <p className="text-sm text-stone-500">
-                {linhas.length - estornos.length} {linhas.length - estornos.length === 1 ? "lançamento" : "lançamentos"}
-                {estornos.length > 0 && ` · ${estornos.length} ${estornos.length === 1 ? "estorno" : "estornos"}`}
+                {quantidadeTotal} {quantidadeTotal === 1 ? "lançamento" : "lançamentos"}
+                {estornos.length > 0 && " (inclui estornos)"}
               </p>
               {error && <Mensagem tipo="erro">Não foi possível carregar o extrato. Tente de novo.</Mensagem>}
+              {quantidadeTotal > linhas.length && (
+                <Mensagem tipo="aviso">
+                  O total está completo, mas a lista mostra só {linhas.length} de {quantidadeTotal} lançamentos. Escolha um período menor para ver todos.
+                </Mensagem>
+              )}
             </section>
 
             {linhas.length > 0 && (
@@ -146,6 +166,7 @@ async function Extrato({ searchParams }: { searchParams: Promise<Record<string, 
                         {l.cliente_nome ? ` · ${l.cliente_nome}` : ""}
                       </p>
                       <p className="text-xs text-stone-500">{detalhe(l)}</p>
+                      <p className={`text-xs font-medium ${l.pago_em ? "text-emerald-700" : "text-stone-500"}`}>{l.pago_em ? `Pago em ${dataCurta(l.pago_em)}` : "A pagar"}</p>
                       {ehDono && (
                         <Link href={`/comandas/${l.comanda_id}`} className="text-xs font-medium text-rose-700 hover:underline">
                           Ver comanda

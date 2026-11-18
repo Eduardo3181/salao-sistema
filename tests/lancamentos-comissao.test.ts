@@ -6,7 +6,7 @@
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import { novaConexao } from "./apoio/banco";
 
-const { db, como, comoAdmin, deveFalhar, criarUsuario, criarSalao, colocarNaEquipe } = novaConexao();
+const { db, como, comoAdmin, comoServidor, deveFalhar, criarUsuario, criarSalao, colocarNaEquipe } = novaConexao();
 
 let donoA = "", donoB = "", recepcaoA = "", anaUser = "", biaUser = "";
 let salaoA = "";
@@ -15,12 +15,6 @@ let corte = "", shampoo = "";
 let cliente = "";
 let comanda = "", itemCorte = "", itemShampoo = "";
 
-/** Age como o servidor do sistema (chave secreta). */
-async function comoServidor() {
-  await db.query("reset role");
-  await db.query("select set_config('request.jwt.claims', $1, true)", [JSON.stringify({ role: "service_role" })]);
-  await db.query("set local role service_role");
-}
 const gravar = "select public.gravar_comissoes($1, $2, $3, $4, $5) as ok";
 const fechadaEm = async () => {
   await comoAdmin();

@@ -16,6 +16,7 @@ import {
 import { usuarioLogado } from "@/lib/supabase/server";
 import { mudarAcesso } from "./acoes-equipe";
 import FormEquipe from "./form-equipe";
+import { RemoverPessoa } from "./remover-pessoa";
 
 export const metadata: Metadata = { title: "Painel | Sistema do Salão" };
 
@@ -242,7 +243,7 @@ async function Painel() {
 
             <ul className="mt-4 divide-y divide-stone-100">
               {membros.map((m) => (
-                <li key={m.id} className="flex items-center justify-between gap-3 py-3">
+                <li key={m.id} className="flex flex-wrap items-center justify-between gap-3 py-3">
                   <div className="min-w-0">
                     <p className={`truncate text-sm font-medium ${m.ativo ? "text-stone-900" : "text-stone-400 line-through"}`}>
                       {m.nome ?? (m.user_id === userId ? "Você" : m.email)}
@@ -254,13 +255,16 @@ async function Painel() {
                     </p>
                   </div>
                   {m.perfil !== "dono" && (
-                    <form action={mudarAcesso}>
-                      <input type="hidden" name="membro_id" value={m.id} />
-                      <input type="hidden" name="ativo" value={m.ativo ? "false" : "true"} />
-                      <button className="shrink-0 rounded-lg px-3 py-1.5 text-xs font-medium text-stone-700 ring-1 ring-stone-300 hover:bg-stone-50">
-                        {m.ativo ? "Tirar acesso" : "Devolver acesso"}
-                      </button>
-                    </form>
+                    <div className="flex flex-wrap justify-end gap-2">
+                      <form action={mudarAcesso}>
+                        <input type="hidden" name="membro_id" value={m.id} />
+                        <input type="hidden" name="ativo" value={m.ativo ? "false" : "true"} />
+                        <button className="shrink-0 rounded-lg px-3 py-1.5 text-xs font-medium text-stone-700 ring-1 ring-stone-300 hover:bg-stone-50">
+                          {m.ativo ? "Tirar acesso" : "Devolver acesso"}
+                        </button>
+                      </form>
+                      {!m.ativo && <RemoverPessoa membroId={m.id} nome={m.nome ?? m.email} />}
+                    </div>
                   )}
                 </li>
               ))}

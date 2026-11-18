@@ -19,7 +19,7 @@ Pendências anotadas na Etapa 1 (antes do piloto, salvo indicação):
 - Apagar a chave secreta "default" do Supabase, que não é usada (a usada é a "site").
 - Quem perdeu o acesso e entra de novo cai em "Cadastre o seu salão"; mostrar um aviso mais claro.
 - Projeto Supabase de produção em São Paulo e planos pagos (Supabase e Vercel) antes de dados reais.
-- LGPD: botão de "excluir pessoa" que apaga a conta e troca o nome por "Pessoa removida" na auditoria (feito à mão no banco de teste em 16/11/2026, a pedido da dona).
+- LGPD: "excluir pessoa". (feito em 18/11/2026; regras em 02-decisoes.md.)
 
 ## Etapa 2: cadastros (concluída em 17/11/2026)
 - Serviços com categorias, profissionais e assistentes, clientes.
@@ -69,7 +69,7 @@ Pendências anotadas na Etapa 1 (antes do piloto, salvo indicação):
 
 ### Preparação para o uso real (fatias, iniciadas em 18/11/2026)
 1. "Minha senha": trocar a senha a qualquer momento, pedindo a senha atual; os outros aparelhos conectados precisam entrar de novo. (feito: menu lateral e "Mais" no celular.)
-2. "Excluir pessoa" (LGPD), conforme decisões de 18/11/2026 em 02-decisoes.md. Cliente: feito (ficha do cliente > "Apagar dados pessoais", só o dono). Equipe: a fazer.
+2. "Excluir pessoa" (LGPD), conforme decisões de 18/11/2026 em 02-decisoes.md. Cliente: feito (ficha do cliente > "Apagar dados pessoais", só o dono). Equipe: feito (Painel > Equipe: primeiro "Tirar acesso", depois "Apagar de vez"; a conta de login só é apagada se a pessoa não estiver em outro salão).
 3. Revisão de segurança antes de entrar dado real.
 4. Banco de produção em São Paulo e planos pagos (depende da dona: conta e pagamento no nome dela).
 5. "Esqueci minha senha": depende do serviço de e-mail próprio (SMTP).

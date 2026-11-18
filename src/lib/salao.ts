@@ -81,7 +81,7 @@ export function descreverAuditoria(
     if (r.acao === "insert" && !nome && (r.depois?.perfil as string) === "dono") return "Dono(a) do salão cadastrado(a)";
     if (r.acao === "insert" && !nome) return `Pessoa adicionada à equipe como ${perfil}`;
     if (r.acao === "insert") return `${quem} adicionado(a) à equipe como ${perfil}`;
-    if (r.acao === "delete") return `${quem} removido(a) da equipe (era ${perfil})`;
+    if (r.acao === "delete") return `${nome ?? "Uma pessoa"} removido(a) da equipe (era ${perfil})`;
     if (r.antes?.ativo === true && r.depois?.ativo === false) return `Acesso de ${quem} retirado`;
     if (r.antes?.ativo === false && r.depois?.ativo === true) return `Acesso de ${quem} devolvido`;
     if (r.antes?.trocar_senha === true && r.depois?.trocar_senha === false)

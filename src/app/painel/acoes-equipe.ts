@@ -101,3 +101,36 @@ export async function mudarAcesso(form: FormData) {
   if (error) console.error("mudarAcesso falhou", error.code);
   revalidatePath("/painel");
 }
+
+export type EstadoRemoverPessoa = { erro?: string } | undefined;
+
+/**
+ * LGPD: apaga de vez o acesso de quem saiu (só de quem já está sem acesso).
+ * O banco confere que é o dono e tira a pessoa do salão; depois, se ela não estiver em outro salão,
+ * a conta de login (e-mail e senha) é apagada. O nome continua só em comissões, vales e comprovantes.
+ */
+export async function removerPessoa(_: EstadoRemoverPessoa, form: FormData): Promise<EstadoRemoverPessoa> {
+  const ctx = await exigirDono();
+  if (!ctx) return { erro: "Só o dono do salão pode apagar o acesso de alguém." };
+  if (form.get("confirmo") !== "sim") return { erro: "Marque a confirmação para continuar." };
+  const membroId = String(form.get("membro_id") ?? "");
+
+  const { data, error } = await ctx.supabase.rpc("remover_membro", { p_membro_id: membroId });
+  if (error) {
+    console.error("removerPessoa falhou", error.code);
+    if (error.code === "42501" || error.code === "22023") return { erro: error.message };
+    return { erro: "Não foi possível apagar agora. Tente de novo em instantes." };
+  }
+
+  const r = data as { user_id: string; em_outro_salao: boolean };
+  if (!r.em_outro_salao) {
+    const { error: erroConta } = await criarClienteAdmin().auth.admin.deleteUser(r.user_id);
+    if (erroConta) {
+      console.error("removerPessoa: apagar conta falhou", erroConta.code);
+      revalidatePath("/painel");
+      return { erro: "A pessoa saiu da equipe, mas a conta de login não foi apagada. Avise o suporte para concluir." };
+    }
+  }
+  revalidatePath("/painel");
+  return undefined;
+}

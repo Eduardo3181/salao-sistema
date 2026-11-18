@@ -3,6 +3,7 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { Suspense } from "react";
 import { Cabecalho } from "@/components/cabecalho";
+import { BotoesBaixar } from "@/components/botoes-baixar";
 import { Mensagem } from "@/components/ui";
 import { hojeBrasilia } from "@/lib/agenda";
 import { formatarReais } from "@/lib/dinheiro";
@@ -144,7 +145,10 @@ async function Despesas({ searchParams }: { searchParams: Promise<Record<string,
           <div><p className="text-stone-500">Falta pagar</p><p className="text-lg font-semibold text-amber-800">{formatarReais(totalMes - pagoMes)}</p></div>
         </section>
 
-        <NovaDespesa categorias={ativas} hoje={hoje} />
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <NovaDespesa categorias={ativas} hoje={hoje} />
+          <BotoesBaixar href={`/despesas/baixar?mes=${mes}`} />
+        </div>
 
         {atrasadasAntes.length > 0 && (
           <>

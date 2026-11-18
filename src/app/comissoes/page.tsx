@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { Suspense } from "react";
 import { Cabecalho } from "@/components/cabecalho";
+import { BotoesBaixar } from "@/components/botoes-baixar";
 import { Mensagem } from "@/components/ui";
 import { hojeBrasilia } from "@/lib/agenda";
 import { quandoBrasilia } from "@/lib/comandas";
@@ -138,6 +139,7 @@ async function Extrato({ searchParams }: { searchParams: Promise<Record<string, 
               {erroPeriodo && <Mensagem tipo="erro">{erroPeriodo}</Mensagem>}
             </section>
 
+            <BotoesBaixar href={`/comissoes/baixar?de=${periodo.de}&ate=${periodo.ate}${ehDono ? `&p=${escolhido.id}` : ""}`} />
             <section className="rounded-2xl bg-white p-5 shadow-sm ring-1 ring-stone-200">
               <p className="text-sm text-stone-500">
                 {escolhido.nome} · {dataCurta(periodo.de)} a {dataCurta(periodo.ate)}

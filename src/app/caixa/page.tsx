@@ -3,6 +3,7 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { Suspense } from "react";
 import { Cabecalho } from "@/components/cabecalho";
+import { BotoesBaixar } from "@/components/botoes-baixar";
 import { Mensagem } from "@/components/ui";
 import { dataValida, hojeBrasilia, somarDias } from "@/lib/agenda";
 import { NOME_FORMA, quandoBrasilia, type FormaPagamento } from "@/lib/comandas";
@@ -114,6 +115,7 @@ async function Caixa({ searchParams }: { searchParams: Promise<Record<string, st
 
         {resumo && (
           <>
+            <BotoesBaixar href={`/caixa/baixar?d=${data}`} />
             {!caixa && ehHoje && <AbrirCaixa />}
             {!caixa && !ehHoje && <p className="px-1 text-sm text-stone-500">O caixa não foi aberto neste dia. Os números abaixo mostram o que foi registrado.</p>}
 

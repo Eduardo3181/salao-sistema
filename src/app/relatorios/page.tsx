@@ -3,6 +3,7 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { Suspense } from "react";
 import { Cabecalho } from "@/components/cabecalho";
+import { BotoesBaixar } from "@/components/botoes-baixar";
 import { Mensagem } from "@/components/ui";
 import { hojeBrasilia } from "@/lib/agenda";
 import { NOME_FORMA, type FormaPagamento } from "@/lib/comandas";
@@ -91,6 +92,7 @@ async function Relatorios({ searchParams }: { searchParams: Promise<Record<strin
 
         {r && (
           <>
+            <BotoesBaixar href={`/relatorios/baixar?de=${periodo.de}&ate=${periodo.ate}`} />
             <section className={cartao}>
               <h2 className="font-semibold text-stone-900">Resultado</h2>
               <ul className="divide-y divide-stone-100 text-sm">

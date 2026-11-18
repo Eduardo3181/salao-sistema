@@ -53,7 +53,7 @@ Pendências anotadas na Etapa 1 (antes do piloto, salvo indicação):
 5. Pagamento em lote com comprovante em PDF; cancelar pagamento com motivo. (feito: Comissões > Pagar comissões; comprovante para imprimir ou salvar PDF.)
 6. Vales (adiantamentos) descontados à escolha do dono no pagamento. (feito: Comissões > Vales; desconto na tela de pagar.)
 
-## Etapa 6: caixa, despesas e relatórios
+## Etapa 6: caixa, despesas e relatórios (concluída em 18/11/2026)
 - Fechamento do caixa com conferência.
 - Relatórios básicos e resultado do período.
 
@@ -61,7 +61,7 @@ Pendências anotadas na Etapa 1 (antes do piloto, salvo indicação):
 1. Caixa do dia: abrir com troco, entradas automáticas das comandas, retiradas e reforços, comissões e vales em dinheiro, fechamento com conferência e motivo da diferença; reabrir só o dono. (feito: menu Caixa; avisos no painel.)
 2. Despesas: contas a pagar com vencimento, categorias, despesas fixas mensais; despesa paga em dinheiro sai do caixa. (feito: menu Despesas; aviso de contas no painel.)
 3. Relatórios: vendas por profissional, por item e por forma de pagamento; despesas por categoria; resultado do mês (regime de caixa). (feito: menu Relatórios.)
-4. Baixar relatórios e listas em PDF e Excel (.xlsx).
+4. Baixar relatórios e listas em PDF e Excel (.xlsx). (feito: botões Baixar PDF e Baixar Excel em Relatórios, Caixa, Despesas e Comissões.)
 
 ## Etapa 7: uso real no salão da dona
 - Rodar em paralelo ao Salon Soft por algumas semanas, com dados reais.

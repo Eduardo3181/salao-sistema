@@ -146,4 +146,5 @@ Também: **alterar senha e "esqueci minha senha"** entram no MVP (segurança bá
 11. **Quem vê:** o dono vê tudo; a recepção vê só o caixa do dia.
 12. **Planilha:** Excel (.xlsx).
 - **Como o resultado é calculado (17/11/2026):** entrou (pagamentos das comandas no período) − taxas do cartão − comissões entregues − vales dados − despesas pagas. Vendas por profissional e por item usam as comandas fechadas no período, pelo valor de cada item; o desconto no total da comanda aparece à parte. Comissões do período ainda não pagas aparecem como aviso, fora do resultado.
+- **Baixar (18/11/2026):** relatório do período, caixa do dia, despesas do mês e extrato de comissões em PDF e Excel. Os arquivos são gerados na hora e não ficam guardados no servidor. Cada um só baixa o que já pode ver na tela.
 - *Padrão adotado pelo sistema:* receber pagamento não depende do caixa estar aberto (para não travar o atendimento); o painel avisa quando o caixa do dia não foi aberto ou quando um caixa ficou aberto de um dia anterior. O que entrar depois do fechamento aparece como "depois do fechamento".

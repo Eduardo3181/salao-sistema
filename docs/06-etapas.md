@@ -71,7 +71,7 @@ Pendências anotadas na Etapa 1 (antes do piloto, salvo indicação):
 1. "Minha senha": trocar a senha a qualquer momento, pedindo a senha atual; os outros aparelhos conectados precisam entrar de novo. (feito: menu lateral e "Mais" no celular.)
 2. "Excluir pessoa" (LGPD), conforme decisões de 18/11/2026 em 02-decisoes.md. Cliente: feito (ficha do cliente > "Apagar dados pessoais", só o dono). Equipe: feito (Painel > Equipe: primeiro "Tirar acesso", depois "Apagar de vez"; a conta de login só é apagada se a pessoa não estiver em outro salão).
 3. Revisão de segurança antes de entrar dado real. (feita em 18/11/2026: teste do intruso, cabeçalhos de segurança, chaves, registros e dependências; ver 05-seguranca.md.)
-4. Banco de produção em São Paulo e planos pagos (depende da dona: conta e pagamento no nome dela).
+4. Banco de produção em São Paulo e planos pagos (depende da dona: conta e pagamento no nome dela). Adiado para o final, a pedido da dona (18/11/2026). Enquanto isso, nada de dado real: só o banco de testes.
 5. "Esqueci minha senha": depende do serviço de e-mail próprio (SMTP).
 
 ## Etapa 8: piloto e lançamento

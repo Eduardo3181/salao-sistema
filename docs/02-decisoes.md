@@ -148,3 +148,8 @@ Também: **alterar senha e "esqueci minha senha"** entram no MVP (segurança bá
 - **Como o resultado é calculado (17/11/2026):** entrou (pagamentos das comandas no período) − taxas do cartão − comissões entregues − vales dados − despesas pagas. Vendas por profissional e por item usam as comandas fechadas no período, pelo valor de cada item; o desconto no total da comanda aparece à parte. Comissões do período ainda não pagas aparecem como aviso, fora do resultado.
 - **Baixar (18/11/2026):** relatório do período, caixa do dia, despesas do mês e extrato de comissões em PDF e Excel. Os arquivos são gerados na hora e não ficam guardados no servidor. Cada um só baixa o que já pode ver na tela.
 - *Padrão adotado pelo sistema:* receber pagamento não depende do caixa estar aberto (para não travar o atendimento); o painel avisa quando o caixa do dia não foi aberto ou quando um caixa ficou aberto de um dia anterior. O que entrar depois do fechamento aparece como "depois do fechamento".
+
+## Excluir pessoa / LGPD (decisões da dona, 18/11/2026)
+1. **Cliente pede para ser apagado:** os dados pessoais são apagados para sempre (nome vira "Cliente removido"; telefone, nascimento e observações somem). Atendimentos, comandas e valores continuam, sem nome, para caixa, relatórios e comissões não mudarem. Só o dono faz, e fica no histórico (sem o nome).
+2. **Pessoa da equipe sai e pede para ser apagada:** o acesso é apagado (e-mail e senha). O nome continua só nas comissões, vales e comprovantes, porque são registros de pagamento que o salão precisa guardar (confirmar o prazo com o contador).
+- *Limite conhecido:* textos livres digitados pela equipe (como motivo de cancelamento) não são varridos; a orientação na tela é não escrever dados pessoais neles.

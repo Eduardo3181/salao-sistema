@@ -10,6 +10,7 @@ import { formatarTelefone, hojeEmBrasilia, linkWhatsApp } from "@/lib/telefone-d
 import { alternarCliente, registrarAceiteWhatsapp } from "../acoes";
 import { dataHoraBrasil } from "@/lib/salao";
 import FormCliente from "../form-cliente";
+import { RemoverDadosCliente } from "../remover-dados";
 
 export const metadata: Metadata = { title: "Cliente | Sistema do Salão" };
 
@@ -39,7 +40,8 @@ async function Ficha({
     buscarConfiguracao(supabase, salao.salaoId),
   ]);
   if (!cliente) notFound();
-  const pode = podeEditarClientes(salao.perfil, config.profissionaisEditamClientes);
+  const removido = Boolean(cliente.removido_em);
+  const pode = !removido && podeEditarClientes(salao.perfil, config.profissionaisEditamClientes);
   const whats = linkWhatsApp(cliente.telefone);
 
   // Aceite de mensagens no WhatsApp: só dono e recepção veem (o banco garante).
@@ -80,14 +82,19 @@ async function Ficha({
               </a>
             )}
           </div>
-          {!cliente.ativo && <p className="mt-1 text-sm text-stone-500">Cliente desativada.</p>}
+          {!cliente.ativo && !removido && <p className="mt-1 text-sm text-stone-500">Cliente desativada.</p>}
           {sp.salvo === "1" && (
             <div className="mt-3">
               <Mensagem tipo="aviso">Alterações salvas.</Mensagem>
             </div>
           )}
 
-          {pode ? (
+          {removido ? (
+            <p className="mt-3 text-sm text-stone-700">
+              Os dados pessoais foram apagados em {dataHoraBrasil(cliente.removido_em!)}, a pedido do cliente (LGPD). Os atendimentos e valores
+              continuam no sistema, sem nome. Esta ficha não pode mais ser alterada.
+            </p>
+          ) : pode ? (
             <div className="mt-5">
               <FormCliente cliente={cliente} hoje={hojeEmBrasilia()} veTelefone={veTelefone} />
             </div>
@@ -113,7 +120,7 @@ async function Ficha({
           )}
         </section>
 
-        {veTelefone && (
+        {veTelefone && !removido && (
           <section className={cartao}>
             <h2 className="font-semibold text-stone-900">Mensagens no WhatsApp</h2>
             <p className="mt-1 text-sm text-stone-700">
@@ -158,6 +165,8 @@ async function Ficha({
             </p>
           </form>
         )}
+
+        {salao.perfil === "dono" && !removido && <RemoverDadosCliente clienteId={cliente.id} nome={cliente.nome} />}
       </main>
     </div>
   );

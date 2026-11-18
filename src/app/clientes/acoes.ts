@@ -116,3 +116,22 @@ export async function registrarAceiteWhatsapp(form: FormData) {
   if (error) console.error("registrarAceiteWhatsapp falhou:", error.code);
   revalidatePath(`/clientes/${clienteId}`);
 }
+
+export type EstadoRemocao = { erro?: string } | undefined;
+
+/** LGPD: apaga para sempre os dados pessoais do cliente. Só o dono (o banco confere). */
+export async function removerDadosCliente(_: EstadoRemocao, form: FormData): Promise<EstadoRemocao> {
+  const { supabase, salao, ehDono } = await exigirSalao();
+  if (!ehDono) return { erro: "Só o dono pode apagar os dados de um cliente." };
+  const id = texto(form, "id");
+  if (form.get("confirmo") !== "sim") return { erro: "Marque a confirmação para continuar." };
+  const { error } = await supabase.rpc("remover_dados_cliente", { p_salao_id: salao.salaoId, p_cliente_id: id });
+  if (error) {
+    console.error("removerDadosCliente falhou:", error.code);
+    if (error.code === "42501" || error.code === "22023") return { erro: error.message };
+    return { erro: "Não foi possível apagar agora. Tente de novo em instantes." };
+  }
+  revalidatePath("/clientes");
+  revalidatePath(`/clientes/${id}`);
+  return undefined;
+}

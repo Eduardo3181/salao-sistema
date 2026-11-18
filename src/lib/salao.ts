@@ -143,6 +143,8 @@ export function descreverAuditoria(
   if (r.entidade === "clientes") {
     const nome = (r.entidade_id && nomesClientes?.get(r.entidade_id)) || "cliente removida";
     if (r.acao === "insert") return `Cliente cadastrada: ${nome}`;
+    if (((r.depois?.campos_alterados as string[] | undefined) ?? []).includes("removido_em"))
+      return "Dados pessoais de um cliente apagados a pedido dele (LGPD)";
     if (r.antes?.ativo === true && r.depois?.ativo === false) return `Cliente desativada: ${nome}`;
     if (r.antes?.ativo === false && r.depois?.ativo === true) return `Cliente reativada: ${nome}`;
     const campos = ((r.depois?.campos_alterados as string[] | undefined) ?? []).map((c) => NOME_CAMPO_CLIENTE[c] ?? c);

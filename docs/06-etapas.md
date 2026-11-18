@@ -69,7 +69,7 @@ Pendências anotadas na Etapa 1 (antes do piloto, salvo indicação):
 
 ### Preparação para o uso real (fatias, iniciadas em 18/11/2026)
 1. "Minha senha": trocar a senha a qualquer momento, pedindo a senha atual; os outros aparelhos conectados precisam entrar de novo. (feito: menu lateral e "Mais" no celular.)
-2. "Excluir pessoa" (LGPD): apaga a conta e troca o nome por "Pessoa removida" no histórico.
+2. "Excluir pessoa" (LGPD), conforme decisões de 18/11/2026 em 02-decisoes.md. Cliente: feito (ficha do cliente > "Apagar dados pessoais", só o dono). Equipe: a fazer.
 3. Revisão de segurança antes de entrar dado real.
 4. Banco de produção em São Paulo e planos pagos (depende da dona: conta e pagamento no nome dela).
 5. "Esqueci minha senha": depende do serviço de e-mail próprio (SMTP).

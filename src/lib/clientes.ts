@@ -8,6 +8,7 @@ export type Cliente = {
   nascimento: string | null;
   observacoes: string | null;
   ativo: boolean;
+  removido_em: string | null; // dados pessoais apagados a pedido do cliente (LGPD)
 };
 
 /** Configurações do salão (sem linha salva = padrões: chaves de clientes e motivo ligadas; as da comanda desligadas). */

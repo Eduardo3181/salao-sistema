@@ -20,6 +20,12 @@ const texto = (v: string, extra: Partial<NonNullable<CelulaXlsx>> = {}): CelulaX
 
 /** Gera o .xlsx de um documento: tudo numa aba, uma seção embaixo da outra. */
 export async function gerarXlsx(doc: Documento): Promise<Buffer> {
+  if (doc.soTabela && doc.secoes.length === 1) {
+    const s = doc.secoes[0];
+    const linhas = [s.colunas.map((c) => texto(c, { fontWeight: "bold" })), ...s.linhas.map((l) => l.map((c) => celula(c)))];
+    const columns = s.colunas.map((_, i) => ({ width: i === 0 ? 34 : 18 }));
+    return (await writeExcelFile(linhas as never, { columns, sheet: s.titulo }).toBuffer()) as Buffer;
+  }
   const linhas: CelulaXlsx[][] = [
     [texto(doc.titulo, { fontWeight: "bold", fontSize: 14 })],
     [texto(`${doc.salao} · ${doc.periodo}`)],

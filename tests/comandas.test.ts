@@ -77,7 +77,7 @@ describe("Abrir comanda", () => {
     await como(recepcaoA);
     comandaMista = (await db.query(abrir, [salaoA, cliente, agMisto])).rows[0].id;
     const itens = await itensDe(comandaMista);
-    expect(itens.map((i) => [i.profissional_id, i.preco])).toEqual([[ana, 8000], [bia, 5500]]);
+    expect(itens.map((i) => [i.profissional_id, i.preco]).sort()).toEqual([[ana, 8000], [bia, 5500]].sort());
     expect((await resumo(comandaMista)).total_centavos).toBe(13500);
   });
 
@@ -123,7 +123,7 @@ describe("Lançar itens", () => {
     await como(recepcaoA);
     await db.query(lancar, [comandaAvulsa, "servico", corte, ana, 1, 7000, 500]);
     const itens = await itensDe(comandaAvulsa);
-    expect(itens[1].total).toBe(6500);
+    expect(itens.find((i) => i.tipo === "servico").total).toBe(6500); // itens da mesma transação têm o mesmo horário: não depender da ordem
     expect((await resumo(comandaAvulsa)).total_centavos).toBe(15500);
   });
 

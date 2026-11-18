@@ -153,3 +153,15 @@ Também: **alterar senha e "esqueci minha senha"** entram no MVP (segurança bá
 1. **Cliente pede para ser apagado:** os dados pessoais são apagados para sempre (nome vira "Cliente removido"; telefone, nascimento e observações somem). Atendimentos, comandas e valores continuam, sem nome, para caixa, relatórios e comissões não mudarem. Só o dono faz, e fica no histórico (sem o nome).
 2. **Pessoa da equipe sai e pede para ser apagada:** o acesso é apagado (e-mail e senha). O nome continua só nas comissões, vales e comprovantes, porque são registros de pagamento que o salão precisa guardar (confirmar o prazo com o contador).
 - *Limite conhecido:* textos livres digitados pela equipe (como motivo de cancelamento) não são varridos; a orientação na tela é não escrever dados pessoais neles.
+
+## Exportar dados de clientes (decisão da dona, 18/11/2026)
+- A dona pediu as duas exportações:
+  1. **Os dados de um cliente**, para entregar quando ele pedir (LGPD).
+  2. **A lista completa de clientes**, para o salão guardar uma cópia ou levar os dados para outro sistema.
+- **Quem pode:** só o dono. É o mesmo padrão de "Apagar dados pessoais".
+- **Arquivo de um cliente:** ficha, respostas sobre WhatsApp, horários marcados, serviços e produtos das comandas, pagamentos.
+  - Comissões, taxas do cartão e quem lançou ficam de fora, porque são dados internos do salão.
+- **Lista completa:** nome, telefone, nascimento, observações, situação, WhatsApp, última visita e data de cadastro.
+  - As quatro primeiras colunas têm os mesmos nomes da importação, então a planilha volta pelo importador.
+  - Clientes com dados apagados não entram.
+- Cada exportação fica no histórico: quem baixou, quando e de qual cliente, sem nenhum dado pessoal.

@@ -25,5 +25,5 @@
 - [ ] Contrato de tratamento de dados com os salões, com cláusula de cessão para outra empresa do mesmo titular
 - [ ] Tela de aceite no cadastro, com data e IP
 - [ ] Encarregado de dados (DPO): nome e e-mail de contato
-- [ ] Exportação e exclusão de dados do cliente (exclusão feita em 18/11/2026: ficha do cliente e acesso da equipe; exportação falta)
+- [x] Exportação e exclusão de dados do cliente (18/11/2026). Exclusão: ficha do cliente e acesso da equipe. Exportação: arquivo com tudo de um cliente, para entregar a ele, e planilha com todos os clientes do salão. As duas são só do dono e ficam no histórico.
 - [ ] Plano de resposta a incidente (quem avisar e em quanto tempo)

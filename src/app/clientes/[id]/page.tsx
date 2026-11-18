@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
 import { Suspense } from "react";
+import { BotoesBaixar } from "@/components/botoes-baixar";
 import { Cabecalho } from "@/components/cabecalho";
 import { Mensagem } from "@/components/ui";
 import { buscarCliente, buscarConfiguracao, podeEditarClientes, podeVerClientes, podeVerTelefone } from "@/lib/clientes";
@@ -164,6 +165,20 @@ async function Ficha({
               Desativar esconde a cliente da lista, sem apagar o histórico.
             </p>
           </form>
+        )}
+
+        {salao.perfil === "dono" && !removido && (
+          <section className={cartao}>
+            <h2 className="font-semibold text-stone-900">O cliente pediu os dados dele?</h2>
+            <p className="mt-1 text-sm text-stone-700">
+              Pela LGPD, o cliente pode pedir tudo o que o salão guarda sobre ele. Baixe o arquivo e entregue a ele: ficha,
+              respostas sobre WhatsApp, horários marcados, serviços, produtos e pagamentos. Comissões e taxas não entram.
+            </p>
+            <div className="mt-4">
+              <BotoesBaixar href={`/clientes/${cliente.id}/baixar`} />
+            </div>
+            <p className="mt-2 text-xs text-stone-500">Cada vez que o arquivo é baixado, fica anotado no histórico.</p>
+          </section>
         )}
 
         {salao.perfil === "dono" && !removido && <RemoverDadosCliente clienteId={cliente.id} nome={cliente.nome} />}

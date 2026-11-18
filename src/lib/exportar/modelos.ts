@@ -1,7 +1,9 @@
 /**
  * Monta os documentos para baixar a partir dos dados das telas (módulo puro, testado).
  */
-import { NOME_FORMA, type FormaPagamento } from "@/lib/comandas";
+import { NOME_FORMA, NOME_SITUACAO_COMANDA, type FormaPagamento, type SituacaoComanda } from "@/lib/comandas";
+import { NOME_SITUACAO } from "@/lib/agenda";
+import { formatarTelefone } from "@/lib/telefone-data";
 import { NOME_FORMA_DESPESA, NOME_SITUACAO_DESPESA, situacaoDespesa, type FormaDespesa } from "@/lib/despesas";
 import { dataBr, n, r, reaisTexto, t, type Celula, type Documento } from "./documento";
 
@@ -266,4 +268,140 @@ function dataHora(iso: string): string {
   const f = new Intl.DateTimeFormat("pt-BR", { timeZone: "America/Sao_Paulo", day: "2-digit", month: "2-digit", hour: "2-digit", minute: "2-digit", hourCycle: "h23" }).formatToParts(new Date(iso));
   const v = (k: string) => f.find((p) => p.type === k)?.value ?? "";
   return `${v("day")}/${v("month")} ${v("hour")}:${v("minute")}`;
+}
+
+// ---------------------------------------------------------------------------
+// Clientes (LGPD e portabilidade)
+// ---------------------------------------------------------------------------
+/** "18/11/2026 14:05" no horário de Brasília */
+function dataHoraCompleta(iso: string): string {
+  const f = new Intl.DateTimeFormat("pt-BR", {
+    timeZone: "America/Sao_Paulo", day: "2-digit", month: "2-digit", year: "numeric", hour: "2-digit", minute: "2-digit", hourCycle: "h23",
+  }).formatToParts(new Date(iso));
+  const v = (k: string) => f.find((p) => p.type === k)?.value ?? "";
+  return `${v("day")}/${v("month")}/${v("year")} ${v("hour")}:${v("minute")}`;
+}
+/** "18/11/2026" no horário de Brasília */
+const dataCompleta = (iso: string) => dataHoraCompleta(iso).slice(0, 10);
+
+const ORIGEM_ACEITE: Record<string, string> = {
+  recepcao: "Registrado no salão",
+  resposta_cliente: "Resposta do cliente",
+  importacao: "Veio da planilha importada",
+};
+
+export type DadosCliente = {
+  cliente: { nome: string; telefone: string | null; nascimento: string | null; observacoes: string | null; ativo: boolean; cadastrado_em: string };
+  aceites: { aceitou: boolean; origem: string; registrado_em: string }[];
+  horarios: { inicio: string; servico: string; profissional: string; situacao: string; valor: number }[];
+  consumo: { data: string; situacao: SituacaoComanda; item: string; profissional: string | null; quantidade: number; total: number }[];
+  pagamentos: { data: string; forma: FormaPagamento; parcelas: number; valor: number }[];
+};
+
+/** Tudo o que o salão guarda sobre um cliente, para entregar a ele (LGPD). */
+export function documentoDadosCliente(d: DadosCliente, salao: string, rodape: string): Documento {
+  const c = d.cliente;
+  const vazio = (linhas: Celula[][], colunas: number, texto: string) => (linhas.length ? linhas : [[t(texto), ...Array(colunas - 1).fill(t(""))]]);
+  return {
+    titulo: "Dados pessoais guardados pelo salão",
+    salao,
+    periodo: c.nome,
+    rodape: `${rodape}. Pedido do titular dos dados (LGPD, art. 18).`,
+    secoes: [
+      {
+        titulo: "Ficha",
+        colunas: ["Dado", "Valor"],
+        linhas: [
+          [t("Nome"), t(c.nome)],
+          [t("Telefone"), t(formatarTelefone(c.telefone) || "Não informado")],
+          [t("Nascimento"), t(c.nascimento ? dataBr(c.nascimento) : "Não informado")],
+          [t("Observações"), t(c.observacoes || "Nenhuma")],
+          [t("Situação"), t(c.ativo ? "Ativo" : "Desativado")],
+          [t("Cadastrado em"), t(dataCompleta(c.cadastrado_em))],
+        ],
+      },
+      {
+        titulo: "Mensagens no WhatsApp (respostas registradas)",
+        colunas: ["Data", "Resposta", "Como foi registrado"],
+        linhas: vazio(
+          d.aceites.map((a) => [t(dataHoraCompleta(a.registrado_em)), t(a.aceitou ? "Aceitou" : "Não aceitou"), t(ORIGEM_ACEITE[a.origem] ?? a.origem)]),
+          3,
+          "Nunca perguntado",
+        ),
+      },
+      {
+        titulo: "Horários marcados",
+        colunas: ["Data e hora", "Serviço", "Profissional", "Situação", "Valor"],
+        linhas: vazio(
+          d.horarios.map((h) => [t(dataHoraCompleta(h.inicio)), t(h.servico), t(h.profissional), t(NOME_SITUACAO[h.situacao] ?? h.situacao), r(h.valor)]),
+          5,
+          "Nenhum",
+        ),
+      },
+      {
+        titulo: "Serviços e produtos (comandas)",
+        colunas: ["Data", "Item", "Profissional", "Qtd.", "Valor", "Comanda"],
+        linhas: vazio(
+          d.consumo.map((x) => [t(dataCompleta(x.data)), t(x.item), t(x.profissional ?? ""), n(x.quantidade), r(x.total), t(NOME_SITUACAO_COMANDA[x.situacao] ?? x.situacao)]),
+          6,
+          "Nenhum",
+        ),
+      },
+      {
+        titulo: "Pagamentos",
+        colunas: ["Data", "Forma", "Valor"],
+        linhas: vazio(
+          d.pagamentos.map((p) => [
+            t(dataHoraCompleta(p.data)),
+            t(p.forma === "credito_parcelado" ? `${NOME_FORMA[p.forma]} (${p.parcelas}x)` : NOME_FORMA[p.forma] ?? p.forma),
+            r(p.valor),
+          ]),
+          3,
+          "Nenhum",
+        ),
+        total: d.pagamentos.length ? [t("Total"), t(""), r(soma(d.pagamentos.map((p) => p.valor)))] : undefined,
+      },
+    ],
+  };
+}
+
+export type LinhaListaClientes = {
+  nome: string;
+  telefone: string | null;
+  nascimento: string | null;
+  observacoes: string | null;
+  ativo: boolean;
+  cadastrado_em: string;
+  whatsapp: boolean | null;
+  ultima_visita: string | null;
+};
+
+/**
+ * Lista completa de clientes do salão. As 4 primeiras colunas têm os mesmos nomes da importação,
+ * então a planilha pode ser lida de volta por este ou por outro sistema.
+ */
+export function documentoListaClientes(itens: LinhaListaClientes[], salao: string, hoje: string, rodape: string): Documento {
+  return {
+    titulo: "Clientes do salão",
+    soTabela: true,
+    salao,
+    periodo: `${itens.length} ${itens.length === 1 ? "cliente" : "clientes"} em ${dataBr(hoje)}`,
+    rodape,
+    secoes: [
+      {
+        titulo: "Clientes",
+        colunas: ["Nome", "Telefone", "Nascimento", "Observações", "Situação", "WhatsApp", "Última visita", "Cadastrado em"],
+        linhas: itens.map((c) => [
+          t(c.nome),
+          t(formatarTelefone(c.telefone)),
+          t(c.nascimento ? dataBr(c.nascimento) : ""),
+          t(c.observacoes),
+          t(c.ativo ? "Ativo" : "Desativado"),
+          t(c.whatsapp === null ? "Não perguntado" : c.whatsapp ? "Aceitou" : "Não aceitou"),
+          t(c.ultima_visita ? dataCompleta(c.ultima_visita) : ""),
+          t(dataCompleta(c.cadastrado_em)),
+        ]),
+      },
+    ],
+  };
 }

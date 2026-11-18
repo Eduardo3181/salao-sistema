@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { Suspense } from "react";
+import { BotoesBaixar } from "@/components/botoes-baixar";
 import { Cabecalho } from "@/components/cabecalho";
 import { redirect } from "next/navigation";
 import { buscarClientes, buscarConfiguracao, podeEditarClientes, podeVerClientes, podeVerTelefone } from "@/lib/clientes";
@@ -115,6 +116,19 @@ async function Clientes({ searchParams }: { searchParams: Promise<Record<string,
             </Link>
           </p>
         </section>
+
+        {salao.perfil === "dono" && (
+          <section className={cartao}>
+            <h2 className="font-semibold text-stone-900">Baixar todos os clientes</h2>
+            <p className="mt-1 text-sm text-stone-700">
+              Uma planilha com todos os clientes (ativos e desativados), para guardar uma cópia ou levar para outro sistema.
+              Os dados são do salão. As colunas Nome, Telefone, Nascimento e Observações são as mesmas da importação.
+            </p>
+            <div className="mt-4">
+              <BotoesBaixar href="/clientes/baixar" />
+            </div>
+          </section>
+        )}
       </main>
     </div>
   );

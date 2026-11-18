@@ -18,6 +18,8 @@ export type Documento = {
   periodo: string;
   secoes: Secao[];
   rodape?: string;
+  /** No Excel: só a tabela, com os nomes das colunas na linha 1 (para a planilha poder ser importada de volta). */
+  soTabela?: boolean;
 };
 
 export const t = (texto: string | null | undefined): Celula => ({ texto: texto ?? "" });

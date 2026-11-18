@@ -142,6 +142,13 @@ export function descreverAuditoria(
   }
   if (r.entidade === "clientes") {
     const nome = (r.entidade_id && nomesClientes?.get(r.entidade_id)) || "cliente removida";
+    if (r.acao === "exportar") {
+      if (!r.entidade_id) {
+        const q = Number(r.depois?.quantidade ?? 0);
+        return `Lista de clientes baixada (${q} ${q === 1 ? "cliente" : "clientes"})`;
+      }
+      return `Dados de ${nome} baixados para entregar ao cliente (LGPD)`;
+    }
     if (r.acao === "insert") return `Cliente cadastrada: ${nome}`;
     if (((r.depois?.campos_alterados as string[] | undefined) ?? []).includes("removido_em"))
       return "Dados pessoais de um cliente apagados a pedido dele (LGPD)";

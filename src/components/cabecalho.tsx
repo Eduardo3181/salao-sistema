@@ -1,4 +1,4 @@
-import { Banknote, ChartColumn, CalendarDays, Contact, House, LogOut, Menu, Package, Receipt, ReceiptText, Scissors, Settings, Users, Wallet, type LucideIcon } from "lucide-react";
+import { Banknote, ChartColumn, CalendarDays, Contact, House, KeyRound, LogOut, Menu, Package, Receipt, ReceiptText, Scissors, Settings, Users, Wallet, type LucideIcon } from "lucide-react";
 import Link from "next/link";
 import { sair } from "@/app/acoes";
 import { NOME_PERFIL, type MeuSalao, type Perfil } from "@/lib/salao";
@@ -63,7 +63,17 @@ export function Cabecalho({ salao, atual }: { salao: MeuSalao; atual: string }) 
             </Link>
           ))}
         </nav>
-        <form action={sair} className="border-t border-stone-100 p-3">
+        <form action={sair} className="space-y-1 border-t border-stone-100 p-3">
+          <Link
+            href="/minha-senha"
+            aria-current={ativo("/minha-senha") ? "page" : undefined}
+            className={`flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium ${
+              ativo("/minha-senha") ? "bg-rose-50 text-rose-800" : "text-stone-600 hover:bg-stone-50 hover:text-stone-900"
+            }`}
+          >
+            <KeyRound aria-hidden className="h-5 w-5 shrink-0" strokeWidth={1.75} />
+            Minha senha
+          </Link>
           <button className="flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium text-stone-600 hover:bg-stone-50">
             <LogOut aria-hidden className="h-5 w-5" strokeWidth={1.75} />
             Sair

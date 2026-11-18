@@ -35,12 +35,13 @@ async function Pagar({ searchParams }: { searchParams: Promise<Record<string, st
   ]);
   if (error) console.error("pagar comissões (leitura) falhou:", error.code);
   const nomeDe = new Map(equipe.map((p) => [p.id, p.nome]));
-  const saldos = ((data ?? []) as { profissional_id: string; total_centavos: number; quantidade: number; mais_antigo: string }[])
+  const saldos = ((data ?? []) as { profissional_id: string; total_centavos: number; quantidade: number; mais_antigo: string; vales_centavos: number }[])
     .map((s) => ({
       profissionalId: s.profissional_id,
       totalCentavos: Number(s.total_centavos),
       quantidade: Number(s.quantidade),
       maisAntigo: s.mais_antigo,
+      valesCentavos: Number(s.vales_centavos),
     }))
     .map((s) => ({ ...s, nome: nomeDe.get(s.profissionalId) ?? "Profissional", desde: quandoBrasilia(s.maisAntigo).slice(0, 5) }))
     .sort((a, b) => a.nome.localeCompare(b.nome, "pt-BR"));

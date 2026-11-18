@@ -191,9 +191,19 @@ export function descreverAuditoria(
   if (r.entidade === "pagamentos_comissao") {
     const x = r.depois ?? r.antes;
     const valor = formatarReais(Number(x?.valor_centavos ?? 0));
-    if (r.acao === "insert") return `Pagamento de comissão registrado: ${valor}`;
+    if (r.acao === "insert")
+      return Number(x?.desconto_vales_centavos ?? 0) > 0
+        ? `Pagamento de comissão registrado: ${valor} (vale descontado ${formatarReais(Number(x?.desconto_vales_centavos))})`
+        : `Pagamento de comissão registrado: ${valor}`;
     if (!r.antes?.cancelado_em && r.depois?.cancelado_em) return `Pagamento de comissão cancelado (${valor}): ${r.depois?.motivo_cancelamento ?? ""}`;
     return `Pagamento de comissão alterado (${valor})`;
+  }
+  if (r.entidade === "vales") {
+    const x = r.depois ?? r.antes;
+    const valor = formatarReais(Number(x?.valor_centavos ?? 0));
+    if (r.acao === "insert") return `Vale registrado: ${valor}`;
+    if (!r.antes?.cancelado_em && r.depois?.cancelado_em) return `Vale cancelado (${valor}): ${r.depois?.motivo_cancelamento ?? ""}`;
+    return `Vale alterado (${valor})`;
   }
   if (r.entidade === "taxas_cartao") {
     const t = r.depois ?? r.antes;

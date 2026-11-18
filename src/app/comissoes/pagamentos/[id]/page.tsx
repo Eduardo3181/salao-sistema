@@ -25,18 +25,22 @@ type Item = { criado_em: string; item_nome: string; estorno: boolean; valor_cent
 async function Comprovante({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
   const { supabase, salao, ehDono } = await exigirSalao();
-  const [{ data: p }, { data: itensR }] = await Promise.all([
+  const [{ data: p }, { data: itensR }, { data: valesR }] = await Promise.all([
     supabase
       .from("pagamentos_comissao")
-      .select("id, profissional_id, valor_centavos, quantidade, meio, pago_em, ate, primeiro_lancamento, observacao, criado_em, cancelado_em, motivo_cancelamento, profissionais(nome)")
+      .select("id, profissional_id, valor_centavos, desconto_vales_centavos, quantidade, meio, pago_em, ate, primeiro_lancamento, observacao, criado_em, cancelado_em, motivo_cancelamento, profissionais(nome)")
       .eq("id", id)
       .eq("salao_id", salao.salaoId)
       .maybeSingle(),
     supabase.rpc("itens_pagamento_comissao", { p_pagamento_id: id }),
+    supabase.from("vale_descontos").select("valor_centavos, vales(dado_em)").eq("pagamento_id", id),
   ]);
   if (!p) notFound();
   const nome = (p as unknown as { profissionais: { nome: string } | null }).profissionais?.nome ?? "Profissional";
   const itens = (itensR ?? []) as Item[];
+  const valesDescontados = (valesR ?? []) as unknown as { valor_centavos: number; vales: { dado_em: string } | null }[];
+  const desconto = Number(p.desconto_vales_centavos);
+  const entregue = Number(p.valor_centavos) - desconto;
 
   return (
     <div className="flex flex-1 flex-col bg-stone-100 pb-20 md:pb-0 md:pl-56 print:bg-white print:pb-0 print:pl-0">
@@ -70,7 +74,7 @@ async function Comprovante({ params }: { params: Promise<{ id: string }> }) {
 
           <dl className="grid grid-cols-1 gap-x-6 gap-y-2 text-sm sm:grid-cols-2">
             <div><dt className="text-stone-500">Recebido por</dt><dd className="font-medium text-stone-900">{nome}</dd></div>
-            <div><dt className="text-stone-500">Valor</dt><dd className="text-lg font-semibold text-stone-900">{formatarReais(Number(p.valor_centavos))}</dd></div>
+            <div><dt className="text-stone-500">Valor entregue</dt><dd className="text-lg font-semibold text-stone-900">{formatarReais(entregue)}</dd></div>
             <div><dt className="text-stone-500">Período</dt><dd className="text-stone-900">{dataCurta(p.primeiro_lancamento)} a {dataCurta(p.ate)}</dd></div>
             <div><dt className="text-stone-500">Pago em</dt><dd className="text-stone-900">{dataCurta(p.pago_em)} · {NOME_MEIO[p.meio as keyof typeof NOME_MEIO]}</dd></div>
             {p.observacao && <div className="sm:col-span-2"><dt className="text-stone-500">Observação</dt><dd className="text-stone-900">{p.observacao}</dd></div>}
@@ -95,9 +99,24 @@ async function Comprovante({ params }: { params: Promise<{ id: string }> }) {
             </tbody>
             <tfoot>
               <tr>
-                <td colSpan={2} className="pt-2 font-semibold text-stone-900">Total ({p.quantidade} {p.quantidade === 1 ? "lançamento" : "lançamentos"})</td>
+                <td colSpan={2} className="pt-2 font-semibold text-stone-900">Total de comissões ({p.quantidade} {p.quantidade === 1 ? "lançamento" : "lançamentos"})</td>
                 <td className="pt-2 text-right font-semibold text-stone-900">{formatarReais(Number(p.valor_centavos))}</td>
               </tr>
+              {desconto > 0 && (
+                <tr>
+                  <td colSpan={2} className="pt-1 text-stone-700">
+                    Vale descontado
+                    {valesDescontados.length > 0 && ` (${valesDescontados.map((v) => `${formatarReais(Number(v.valor_centavos))} do vale de ${v.vales ? dataCurta(v.vales.dado_em) : "?"}`).join("; ")})`}
+                  </td>
+                  <td className="pt-1 text-right text-stone-700">− {formatarReais(desconto)}</td>
+                </tr>
+              )}
+              {desconto > 0 && (
+                <tr>
+                  <td colSpan={2} className="pt-1 font-semibold text-stone-900">Valor entregue</td>
+                  <td className="pt-1 text-right font-semibold text-stone-900">{formatarReais(entregue)}</td>
+                </tr>
+              )}
             </tfoot>
           </table>
 

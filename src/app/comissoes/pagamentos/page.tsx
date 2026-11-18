@@ -22,6 +22,7 @@ type Linha = {
   id: string;
   profissional_id: string;
   valor_centavos: number;
+  desconto_vales_centavos: number;
   meio: keyof typeof NOME_MEIO;
   pago_em: string;
   ate: string;
@@ -35,7 +36,7 @@ async function Pagamentos() {
   const [{ data, error }, equipe] = await Promise.all([
     supabase
       .from("pagamentos_comissao")
-      .select("id, profissional_id, valor_centavos, meio, pago_em, ate, primeiro_lancamento, cancelado_em")
+      .select("id, profissional_id, valor_centavos, desconto_vales_centavos, meio, pago_em, ate, primeiro_lancamento, cancelado_em")
       .eq("salao_id", salao.salaoId)
       .order("criado_em", { ascending: false })
       .limit(200),
@@ -73,11 +74,12 @@ async function Pagamentos() {
                     </span>
                     <span className="block text-xs text-stone-500">
                       Pago em {dataCurta(p.pago_em)} · {NOME_MEIO[p.meio]} · de {dataCurta(p.primeiro_lancamento)} a {dataCurta(p.ate)}
+                      {Number(p.desconto_vales_centavos) > 0 && ` · vale descontado ${formatarReais(Number(p.desconto_vales_centavos))}`}
                       {p.cancelado_em && " · cancelado"}
                     </span>
                   </span>
                   <span className={`shrink-0 font-semibold ${p.cancelado_em ? "text-stone-400 line-through" : "text-stone-900"}`}>
-                    {formatarReais(Number(p.valor_centavos))}
+                    {formatarReais(Number(p.valor_centavos) - Number(p.desconto_vales_centavos))}
                   </span>
                 </Link>
               </li>

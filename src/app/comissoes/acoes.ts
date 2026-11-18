@@ -1,6 +1,7 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
+import { reaisParaCentavos } from "@/lib/dinheiro";
 import { exigirSalao } from "@/lib/sessao";
 
 const MEIOS = ["pix", "dinheiro", "transferencia", "outro"] as const;
@@ -17,7 +18,7 @@ const erroDoBanco = (code: string | undefined, texto: string, padrao: string) =>
  */
 export async function registrarPagamentos(
   ate: string,
-  pessoas: { profissionalId: string; valorConferido: number }[],
+  pessoas: { profissionalId: string; valorConferido: number; descontoVales: number }[],
   meio: Meio,
   pagoEm: string,
   observacao: string,
@@ -26,6 +27,8 @@ export async function registrarPagamentos(
   if (!ehDono) return { ok: false, erro: "Só o dono registra pagamento de comissões." };
   if (!MEIOS.includes(meio)) return { ok: false, erro: "Escolha como foi pago." };
   if (!pessoas.length) return { ok: false, erro: "Escolha pelo menos uma pessoa." };
+  if (pessoas.some((p) => !Number.isSafeInteger(p.descontoVales) || p.descontoVales < 0))
+    return { ok: false, erro: "Desconto de vale inválido." };
 
   const resultados: ResultadoPessoa[] = [];
   for (const p of pessoas) {
@@ -37,6 +40,7 @@ export async function registrarPagamentos(
       p_meio: meio,
       p_pago_em: pagoEm,
       p_observacao: observacao.slice(0, 200) || null,
+      p_desconto_vales: p.descontoVales,
     });
     if (error) {
       console.error("registrarPagamento falhou:", error.code);
@@ -57,5 +61,46 @@ export async function cancelarPagamento(pagamentoId: string, motivo: string): Pr
   }
   revalidatePath("/comissoes");
   revalidatePath(`/comissoes/pagamentos/${pagamentoId}`);
+  return { ok: true };
+}
+
+/** Registra um vale (adiantamento). Só o dono; o dinheiro é entregue fora do sistema. */
+export async function registrarVale(
+  profissionalId: string,
+  valorTexto: string,
+  dadoEm: string,
+  meio: Meio,
+  observacao: string,
+): Promise<{ ok: true } | { ok: false; erro: string }> {
+  const { supabase, salao, ehDono } = await exigirSalao();
+  if (!ehDono) return { ok: false, erro: "Só o dono registra vales." };
+  if (!MEIOS.includes(meio)) return { ok: false, erro: "Escolha como o vale foi dado." };
+  const valor = reaisParaCentavos(valorTexto);
+  if (valor === null || valor < 1) return { ok: false, erro: "Valor inválido. Exemplos: 100 ou 150,50." };
+  const { error } = await supabase.rpc("registrar_vale", {
+    p_salao_id: salao.salaoId,
+    p_profissional_id: profissionalId,
+    p_valor: valor,
+    p_dado_em: dadoEm,
+    p_meio: meio,
+    p_observacao: observacao.slice(0, 200) || null,
+  });
+  if (error) {
+    console.error("registrarVale falhou:", error.code);
+    return { ok: false, erro: erroDoBanco(error.code, error.message, "Não foi possível registrar. Tente de novo.") };
+  }
+  revalidatePath("/comissoes/vales");
+  return { ok: true };
+}
+
+export async function cancelarVale(valeId: string, motivo: string): Promise<{ ok: true } | { ok: false; erro: string }> {
+  const { supabase, ehDono } = await exigirSalao();
+  if (!ehDono) return { ok: false, erro: "Só o dono cancela vales." };
+  const { error } = await supabase.rpc("cancelar_vale", { p_vale_id: valeId, p_motivo: motivo.slice(0, 200) });
+  if (error) {
+    console.error("cancelarVale falhou:", error.code);
+    return { ok: false, erro: erroDoBanco(error.code, error.message, "Não foi possível cancelar. Tente de novo.") };
+  }
+  revalidatePath("/comissoes/vales");
   return { ok: true };
 }

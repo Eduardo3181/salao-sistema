@@ -79,6 +79,9 @@ async function Extrato({ searchParams }: { searchParams: Promise<Record<string, 
           <Link href="/comissoes/pagamentos" className="rounded-lg px-4 py-2 text-sm font-semibold text-rose-700 ring-1 ring-rose-200 hover:bg-rose-50">
             {ehDono ? "Pagamentos registrados" : "Meus pagamentos"}
           </Link>
+          <Link href="/comissoes/vales" className="rounded-lg px-4 py-2 text-sm font-semibold text-rose-700 ring-1 ring-rose-200 hover:bg-rose-50">
+            {ehDono ? "Vales" : "Meus vales"}
+          </Link>
         </div>
         <div>
           <h1 className="text-xl font-semibold text-stone-900">{ehDono ? "Extrato de comissões" : "Minhas comissões"}</h1>

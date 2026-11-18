@@ -4,12 +4,12 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState, useTransition } from "react";
 import { Mensagem } from "@/components/ui";
-import { formatarReais } from "@/lib/dinheiro";
+import { centavosParaTexto, formatarReais, reaisParaCentavos } from "@/lib/dinheiro";
 import { NOME_MEIO } from "@/lib/pagamento-comissoes";
 import { dataCurta } from "@/lib/periodos";
 import { registrarPagamentos, type Meio } from "../acoes";
 
-type Saldo = { profissionalId: string; nome: string; totalCentavos: number; quantidade: number; desde: string };
+type Saldo = { profissionalId: string; nome: string; totalCentavos: number; quantidade: number; desde: string; valesCentavos: number };
 type Resultado = ({ profissionalId: string; ok: true; pagamentoId: string } | { profissionalId: string; ok: false; erro: string }) & { nome: string };
 
 const campo =
@@ -26,9 +26,21 @@ export default function FormPagar({ ate, hoje, saldos }: { ate: string; hoje: st
   const [erro, setErro] = useState<string | null>(null);
   const [resultados, setResultados] = useState<Resultado[] | null>(null);
   const [enviando, iniciar] = useTransition();
+  // Vale a descontar de cada pessoa (o dono escolhe: tudo, uma parte ou nada). Começa com tudo o que cabe.
+  const maxVale = (s: Saldo) => Math.max(0, Math.min(s.valesCentavos, s.totalCentavos));
+  const [vales, setVales] = useState<Record<string, string>>(() =>
+    Object.fromEntries(pagaveis.filter((s) => maxVale(s) > 0).map((s) => [s.profissionalId, centavosParaTexto(maxVale(s))])),
+  );
+  const descontoDe = (s: Saldo): number | null => {
+    const t = (vales[s.profissionalId] ?? "").trim();
+    if (!t) return 0;
+    const v = reaisParaCentavos(t);
+    return v === null || v < 0 || v > maxVale(s) ? null : v;
+  };
 
   const escolhidos = pagaveis.filter((s) => marcados.has(s.profissionalId));
-  const total = escolhidos.reduce((t, s) => t + s.totalCentavos, 0);
+  const total = escolhidos.reduce((t, s) => t + s.totalCentavos - (descontoDe(s) ?? 0), 0);
+  const valeInvalido = escolhidos.find((s) => descontoDe(s) === null);
 
   const alternar = (id: string) =>
     setMarcados((m) => {
@@ -88,6 +100,34 @@ export default function FormPagar({ ate, hoje, saldos }: { ate: string; hoje: st
                 </span>
                 <span className={`shrink-0 font-semibold ${s.totalCentavos < 0 ? "text-amber-800" : "text-stone-900"}`}>{formatarReais(s.totalCentavos)}</span>
               </label>
+              {pode && maxVale(s) > 0 && (
+                <div className="mb-3 ml-12 mr-4 space-y-2 rounded-lg bg-amber-50 p-3 text-sm text-amber-900 ring-1 ring-amber-200">
+                  <p>
+                    Vale em aberto: <strong>{formatarReais(s.valesCentavos)}</strong>. Quanto descontar agora?
+                  </p>
+                  <div className="flex flex-wrap items-center gap-2">
+                    <input
+                      inputMode="decimal"
+                      aria-label={`Vale a descontar de ${s.nome}`}
+                      disabled={conferindo}
+                      value={vales[s.profissionalId] ?? ""}
+                      onChange={(e) => setVales((v) => ({ ...v, [s.profissionalId]: e.target.value }))}
+                      className="w-28 rounded-lg border border-stone-300 bg-white px-3 py-1.5 text-base text-stone-900 outline-none focus:border-rose-600 focus:ring-2 focus:ring-rose-200"
+                    />
+                    <button type="button" disabled={conferindo} onClick={() => setVales((v) => ({ ...v, [s.profissionalId]: centavosParaTexto(maxVale(s)) }))} className="rounded-lg px-3 py-1.5 font-medium ring-1 ring-amber-300 hover:bg-white">
+                      Tudo
+                    </button>
+                    <button type="button" disabled={conferindo} onClick={() => setVales((v) => ({ ...v, [s.profissionalId]: "" }))} className="rounded-lg px-3 py-1.5 font-medium ring-1 ring-amber-300 hover:bg-white">
+                      Nada
+                    </button>
+                  </div>
+                  {descontoDe(s) === null ? (
+                    <p className="text-red-700">Use um valor de 0 até {formatarReais(maxVale(s))}.</p>
+                  ) : (
+                    <p>Valor a entregar: <strong>{formatarReais(s.totalCentavos - (descontoDe(s) ?? 0))}</strong></p>
+                  )}
+                </div>
+              )}
             </li>
           );
         })}
@@ -127,7 +167,7 @@ export default function FormPagar({ ate, hoje, saldos }: { ate: string; hoje: st
           {!conferindo ? (
             <button
               type="button"
-              disabled={escolhidos.length === 0 || !pagoEm}
+              disabled={escolhidos.length === 0 || !pagoEm || Boolean(valeInvalido)}
               onClick={() => { setErro(null); setConferindo(true); }}
               className="w-full rounded-lg bg-rose-700 px-4 py-3 text-base font-semibold text-white hover:bg-rose-800 disabled:opacity-50"
             >
@@ -137,14 +177,18 @@ export default function FormPagar({ ate, hoje, saldos }: { ate: string; hoje: st
             <div className="space-y-3 rounded-xl bg-amber-50 p-4 ring-1 ring-amber-200">
               <p className="font-semibold text-amber-900">Confira antes de registrar</p>
               <ul className="text-sm text-amber-900">
-                {escolhidos.map((s) => (
-                  <li key={s.profissionalId}>
-                    {s.nome}: <strong>{formatarReais(s.totalCentavos)}</strong>
-                  </li>
-                ))}
+                {escolhidos.map((s) => {
+                  const d = descontoDe(s) ?? 0;
+                  return (
+                    <li key={s.profissionalId}>
+                      {s.nome}: <strong>{formatarReais(s.totalCentavos - d)}</strong>
+                      {d > 0 && ` (comissão ${formatarReais(s.totalCentavos)} − vale ${formatarReais(d)})`}
+                    </li>
+                  );
+                })}
               </ul>
               <p className="text-sm text-amber-900">
-                Total {formatarReais(total)} · {NOME_MEIO[meio]} · pago em {dataCurta(pagoEm)} · quita o que estava a pagar até {dataCurta(ate)}.
+                Total a entregar {formatarReais(total)} · {NOME_MEIO[meio]} · pago em {dataCurta(pagoEm)} · quita o que estava a pagar até {dataCurta(ate)}.
               </p>
               <p className="text-xs text-amber-900">Só registra. Se algo estiver errado depois, dá para cancelar com motivo (nada é apagado).</p>
               <div className="flex gap-2">
@@ -160,7 +204,7 @@ export default function FormPagar({ ate, hoje, saldos }: { ate: string; hoje: st
                       const nomes = new Map(escolhidos.map((s) => [s.profissionalId, s.nome]));
                       const r = await registrarPagamentos(
                         ate,
-                        escolhidos.map((s) => ({ profissionalId: s.profissionalId, valorConferido: s.totalCentavos })),
+                        escolhidos.map((s) => ({ profissionalId: s.profissionalId, valorConferido: s.totalCentavos, descontoVales: descontoDe(s) ?? 0 })),
                         meio,
                         pagoEm,
                         obs,

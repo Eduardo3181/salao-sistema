@@ -57,6 +57,12 @@ Pendências anotadas na Etapa 1 (antes do piloto, salvo indicação):
 - Fechamento do caixa com conferência.
 - Relatórios básicos e resultado do período.
 
+### Plano da Etapa 6 (fatias)
+1. Caixa do dia: abrir com troco, entradas automáticas das comandas, retiradas e reforços, comissões e vales em dinheiro, fechamento com conferência e motivo da diferença; reabrir só o dono. (feito: menu Caixa; avisos no painel.)
+2. Despesas: contas a pagar com vencimento, categorias, despesas fixas mensais; despesa paga em dinheiro sai do caixa.
+3. Relatórios: vendas por profissional, por item e por forma de pagamento; despesas por categoria; resultado do mês (regime de caixa).
+4. Baixar relatórios e listas em PDF e Excel (.xlsx).
+
 ## Etapa 7: uso real no salão da dona
 - Rodar em paralelo ao Salon Soft por algumas semanas, com dados reais.
 - Corrigir o que aparecer.

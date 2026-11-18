@@ -1,4 +1,4 @@
-import { CalendarDays, Contact, House, LogOut, Menu, Package, Receipt, Scissors, Settings, Users, Wallet, type LucideIcon } from "lucide-react";
+import { Banknote, CalendarDays, Contact, House, LogOut, Menu, Package, Receipt, Scissors, Settings, Users, Wallet, type LucideIcon } from "lucide-react";
 import Link from "next/link";
 import { sair } from "@/app/acoes";
 import { NOME_PERFIL, type MeuSalao, type Perfil } from "@/lib/salao";
@@ -15,6 +15,7 @@ export const MENU: Item[] = [
   { href: "/comandas", rotulo: "Comandas", Icone: Receipt, perfis: SEM_ASSISTENTE },
   { href: "/clientes", rotulo: "Clientes", Icone: Users, perfis: SEM_ASSISTENTE },
   { href: "/servicos", rotulo: "Serviços", Icone: Scissors, perfis: SEM_ASSISTENTE },
+  { href: "/caixa", rotulo: "Caixa", Icone: Banknote, perfis: ["dono", "recepcao"] },
   { href: "/comissoes", rotulo: "Comissões", Icone: Wallet, perfis: ["dono", "profissional", "assistente"] },
   { href: "/produtos", rotulo: "Produtos", Icone: Package, perfis: SEM_ASSISTENTE },
   { href: "/profissionais", rotulo: "Quem atende", Icone: Contact, perfis: SEM_ASSISTENTE },

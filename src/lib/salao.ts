@@ -198,6 +198,27 @@ export function descreverAuditoria(
     if (!r.antes?.cancelado_em && r.depois?.cancelado_em) return `Pagamento de comissão cancelado (${valor}): ${r.depois?.motivo_cancelamento ?? ""}`;
     return `Pagamento de comissão alterado (${valor})`;
   }
+  if (r.entidade === "caixas") {
+    const x = r.depois ?? r.antes;
+    const dia = String(x?.data ?? "").split("-").reverse().join("/");
+    if (r.acao === "insert") return `Caixa de ${dia} aberto com troco de ${formatarReais(Number(x?.troco_inicial_centavos ?? 0))}`;
+    if (r.antes?.situacao === "aberto" && r.depois?.situacao === "fechado") {
+      const dif = Number(r.depois?.contado_centavos ?? 0) - Number(r.depois?.esperado_centavos ?? 0);
+      return dif === 0
+        ? `Caixa de ${dia} fechado, sem diferença`
+        : `Caixa de ${dia} fechado com diferença de ${formatarReais(dif)}: ${r.depois?.motivo_diferenca ?? ""}`;
+    }
+    if (r.antes?.situacao === "fechado" && r.depois?.situacao === "aberto") return `Caixa de ${dia} reaberto: ${r.depois?.motivo_reabertura ?? ""}`;
+    return `Caixa de ${dia} alterado`;
+  }
+  if (r.entidade === "caixa_movimentos") {
+    const x = r.depois ?? r.antes;
+    const nome = x?.tipo === "retirada" ? "Retirada" : "Reforço";
+    const valor = formatarReais(Number(x?.valor_centavos ?? 0));
+    if (r.acao === "insert") return `${nome} no caixa: ${valor} (${x?.motivo ?? ""})`;
+    if (!r.antes?.cancelado_em && r.depois?.cancelado_em) return `${nome} de ${valor} cancelada: ${r.depois?.motivo_cancelamento ?? ""}`;
+    return `${nome} de ${valor} alterada`;
+  }
   if (r.entidade === "vales") {
     const x = r.depois ?? r.antes;
     const valor = formatarReais(Number(x?.valor_centavos ?? 0));

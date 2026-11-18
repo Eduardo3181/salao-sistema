@@ -100,6 +100,19 @@ async function Painel() {
             .eq("situacao", "aberta")
             .lt("aberta_em", inicioDoDia(hojeBrasilia()))
         ).count ?? 0);
+  // Aviso do caixa (dono e recepção): caixa de hoje não aberto ou caixa de dia anterior esquecido aberto.
+  const caixas =
+    salao.perfil === "dono" || salao.perfil === "recepcao"
+      ? (((
+          await supabase
+            .from("caixas")
+            .select("data, situacao")
+            .eq("salao_id", salao.salaoId)
+            .or(`data.eq.${hojeBrasilia()},situacao.eq.aberto`)
+        ).data ?? []) as { data: string; situacao: string }[])
+      : null;
+  const caixaHojeAberto = caixas ? caixas.some((c) => c.data === hojeBrasilia()) : true;
+  const caixaEsquecido = caixas ? caixas.find((c) => c.data < hojeBrasilia() && c.situacao === "aberto") : undefined;
   const nomePorUsuario = new Map(membros.map((m) => [m.user_id, m.nome ?? m.email]));
   const autor = (id: string | null) =>
     id === userId ? "por você" : id && nomePorUsuario.get(id) ? `por ${nomePorUsuario.get(id)}` : "pelo sistema";
@@ -109,6 +122,29 @@ async function Painel() {
       <Cabecalho salao={salao} atual="/painel" />
 
       <main className="mx-auto w-full max-w-3xl flex-1 space-y-6 px-4 py-6">
+        {caixaEsquecido && (
+          <Link
+            href={`/caixa?d=${caixaEsquecido.data}`}
+            className="flex items-center gap-3 rounded-2xl bg-amber-50 px-5 py-4 text-amber-900 shadow-sm ring-1 ring-amber-200 hover:bg-amber-100"
+          >
+            <TriangleAlert aria-hidden className="h-5 w-5 shrink-0" />
+            <span className="flex-1 text-sm">
+              <strong>O caixa de {caixaEsquecido.data.split("-").reverse().join("/")} ficou aberto.</strong> Feche para conferir o dia.
+            </span>
+            <span className="text-sm font-semibold">Ver</span>
+          </Link>
+        )}
+        {!caixaHojeAberto && (
+          <Link
+            href="/caixa"
+            className="flex items-center gap-3 rounded-2xl bg-sky-50 px-5 py-4 text-sky-900 shadow-sm ring-1 ring-sky-200 hover:bg-sky-100"
+          >
+            <span className="flex-1 text-sm">
+              <strong>O caixa de hoje ainda não foi aberto.</strong> Abra com o troco inicial.
+            </span>
+            <span className="text-sm font-semibold">Abrir</span>
+          </Link>
+        )}
         {comandasAntigas > 0 && (
           <Link
             href="/comandas"

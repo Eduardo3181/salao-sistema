@@ -131,3 +131,18 @@ Também: **alterar senha e "esqueci minha senha"** entram no MVP (segurança bá
 
 ## Textos das telas (decisão da dona, 17/11/2026)
 - Usar "os profissionais", "o profissional", "o assistente", que abrangem todos os gêneros (muitos homens trabalham na área).
+
+## Caixa, despesas e relatórios (decisões da dona, 17/11/2026: "usar as recomendadas")
+1. **Um caixa do salão por dia.**
+2. **Troco inicial** informado sempre ao abrir (pode ser R$ 0).
+3. **Fechamento:** conta o dinheiro em espécie; Pix e cartão aparecem para conferir com a maquininha/banco e marcar "conferido".
+4. **Sobra ou falta** no fechamento exige motivo e fica no histórico.
+5. **Abrir e fechar:** dono e recepção. *Reabrir caixa fechado: só o dono, com motivo (regra 6 de auditoria).*
+6. **Comissão ou vale pago em dinheiro** sai do caixa do dia automaticamente (na data do pagamento/vale).
+7. **Retirada de dinheiro** (banco, cofre) com motivo; também dá para registrar reforço (colocar dinheiro).
+8. **Despesas:** contas a pagar com vencimento e aviso de "vence hoje / atrasada"; despesas fixas se repetem sozinhas todo mês.
+9. **Categorias de despesa:** lista pronta (aluguel, água, luz, internet, produtos, salários, impostos, manutenção, marketing, outros), que o dono pode mudar.
+10. **Resultado do mês:** pelo dinheiro que de fato entrou e saiu (regime de caixa).
+11. **Quem vê:** o dono vê tudo; a recepção vê só o caixa do dia.
+12. **Planilha:** Excel (.xlsx).
+- *Padrão adotado pelo sistema:* receber pagamento não depende do caixa estar aberto (para não travar o atendimento); o painel avisa quando o caixa do dia não foi aberto ou quando um caixa ficou aberto de um dia anterior. O que entrar depois do fechamento aparece como "depois do fechamento".

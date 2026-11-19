@@ -1,4 +1,5 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
+import { NOME_FORMA, type FormaPagamento } from "@/lib/comandas";
 import { formatarDuracao, formatarReais } from "@/lib/dinheiro";
 
 export type Perfil = "dono" | "recepcao" | "profissional" | "assistente";
@@ -66,10 +67,12 @@ export function descreverAuditoria(
   r: RegistroAuditoria,
   nomesClientes?: Map<string, string>,
   nomesProfissionais?: Map<string, string>,
+  comandas?: ContextoComandas,
 ): string {
   const agenda = descreverAgenda(r, nomesClientes, nomesProfissionais);
   if (agenda) return agenda;
   if (r.entidade === "saloes" && r.acao === "insert") return `Salão criado: "${r.depois?.nome}"`;
+  if (r.entidade === "saloes" && r.acao === "delete") return `Salão apagado: "${r.antes?.nome ?? ""}"`;
   if (r.entidade === "saloes" && r.acao === "update") {
     if (r.antes?.nome !== r.depois?.nome) return `Nome do salão alterado de "${r.antes?.nome}" para "${r.depois?.nome}"`;
     return "Dados do salão alterados";
@@ -277,6 +280,8 @@ export function descreverAuditoria(
     const nome = (id && nomesClientes?.get(id)) || "cliente removida";
     return `WhatsApp: ${nome} ${r.depois?.aceitou ? "aceitou receber mensagens" : "não aceitou receber mensagens"}`;
   }
+  const comanda = descreverComanda(r, nomesProfissionais, comandas);
+  if (comanda) return comanda;
   return `${r.acao} em ${r.entidade}`;
 }
 
@@ -361,6 +366,87 @@ function descreverAgenda(
     return r.acao === "delete"
       ? `${prof(a?.assistente_id)} não ajuda mais ${prof(a?.profissional_id)}`
       : `${prof(a?.assistente_id)} passa a ajudar ${prof(a?.profissional_id)}`;
+  }
+  return null;
+}
+
+/**
+ * Nomes para as frases das comandas (a auditoria guarda só os ids):
+ * clienteDaComanda: id da comanda -> nome atual do cliente;
+ * nomeServicoProduto: id do serviço ou produto -> nome;
+ * itens: id do item -> nome do serviço/produto e id da comanda (para os assistentes do item).
+ */
+export type ContextoComandas = {
+  clienteDaComanda?: Map<string, string>;
+  nomeServicoProduto?: Map<string, string>;
+  itens?: Map<string, { nome: string; comandaId: string }>;
+};
+
+
+/** Frases das comandas, itens, assistentes do item e pagamentos. Devolve null se não for de comanda. */
+function descreverComanda(r: RegistroAuditoria, nomesProfissionais?: Map<string, string>, c?: ContextoComandas): string | null {
+  const x = r.depois ?? r.antes;
+  const a = r.antes ?? {};
+  const d = r.depois ?? {};
+  const prof = (id: unknown) => (typeof id === "string" && nomesProfissionais?.get(id)) || "profissional";
+  const reais = (v: unknown) => formatarReais(Number(v ?? 0));
+  /** "comanda de Maria" (ou "comanda" se o cliente não for conhecido). */
+  const comandaDe = (comandaId: unknown) => {
+    const nome = typeof comandaId === "string" ? c?.clienteDaComanda?.get(comandaId) : undefined;
+    return nome ? `comanda de ${nome}` : "comanda";
+  };
+
+  if (r.entidade === "comandas") {
+    const cm = comandaDe(r.entidade_id ?? x?.id);
+    const Cm = cm.charAt(0).toUpperCase() + cm.slice(1);
+    if (r.acao === "insert") return cm === "comanda" ? "Comanda aberta" : `Comanda aberta para ${cm.slice("comanda de ".length)}`;
+    if (a.situacao !== d.situacao) {
+      if (d.situacao === "fechada") return `${Cm} fechada`;
+      if (d.situacao === "cancelada") return `${Cm} cancelada. Motivo: ${d.motivo_cancelamento ?? ""}`;
+      if (d.situacao === "aberta") return `${Cm} reaberta. Motivo: ${d.motivo_reabertura ?? ""}`;
+    }
+    if (a.desconto_centavos !== d.desconto_centavos) return `Desconto na ${cm}: de ${reais(a.desconto_centavos)} para ${reais(d.desconto_centavos)}`;
+    if (!a.comissao_calculada_em && d.comissao_calculada_em) return `Comissões calculadas na ${cm}`;
+    if (a.comissao_calculada_em && !d.comissao_calculada_em) return `Comissões desfeitas na ${cm}`;
+    return `${Cm} alterada`;
+  }
+
+  if (r.entidade === "comanda_itens") {
+    const idItem = x?.servico_id ?? x?.produto_id;
+    const nomeItem = (typeof idItem === "string" && c?.nomeServicoProduto?.get(idItem)) || (x?.tipo === "produto" ? "Produto" : "Serviço");
+    const item = Number(x?.quantidade ?? 1) > 1 ? `${x?.quantidade}x ${nomeItem}` : nomeItem;
+    const cm = comandaDe(x?.comanda_id);
+    const quem = x?.profissional_id ? `, com ${prof(x.profissional_id)}` : "";
+    if (r.acao === "insert") return `${item} lançado na ${cm} (${reais(x?.total_centavos)}${quem})`;
+    if (!a.removido_em && d.removido_em) return `${item} excluído da ${cm}. Motivo: ${d.motivo_remocao ?? ""}`;
+    if (a.total_centavos !== d.total_centavos) return `${item} na ${cm}: valor de ${reais(a.total_centavos)} para ${reais(d.total_centavos)}`;
+    if (JSON.stringify(a.regra_snapshot) !== JSON.stringify(d.regra_snapshot))
+      return d.regra_snapshot ? `Comissão de ${item} calculada (${cm})` : `Comissão de ${item} desfeita (${cm})`;
+    return `${item} alterado na ${cm}`;
+  }
+
+  if (r.entidade === "comanda_item_assistentes") {
+    const info = typeof x?.item_id === "string" ? c?.itens?.get(x.item_id) : undefined;
+    const servico = info?.nome ?? "um serviço";
+    const cm = comandaDe(info?.comandaId);
+    const assistente = prof(x?.assistente_id);
+    if (r.acao === "insert") return `${assistente} incluído(a) como assistente em ${servico} (${cm})`;
+    if (r.acao === "delete") return `${assistente} retirado(a) como assistente de ${servico} (${cm})`;
+    if (a.valor_centavos !== d.valor_centavos)
+      return d.valor_centavos == null
+        ? `Comissão de ${assistente} como assistente em ${servico} desfeita (${cm})`
+        : `Comissão de ${assistente} como assistente em ${servico}: ${reais(d.valor_centavos)} (${cm})`;
+    return `${assistente} como assistente em ${servico}: alterado (${cm})`;
+  }
+
+  if (r.entidade === "pagamentos") {
+    const forma = (NOME_FORMA[x?.forma as FormaPagamento] ?? "pagamento").toLowerCase();
+    const parcelas = Number(x?.parcelas ?? 1) > 1 ? ` em ${x?.parcelas}x` : "";
+    const valor = `${reais(x?.valor_centavos)} no ${forma}${parcelas}`;
+    const cm = comandaDe(x?.comanda_id);
+    if (r.acao === "insert") return `Pagamento de ${valor} na ${cm}`;
+    if (!a.removido_em && d.removido_em) return `Pagamento de ${valor} excluído da ${cm}. Motivo: ${d.motivo_remocao ?? ""}`;
+    return `Pagamento de ${valor} alterado na ${cm}`;
   }
   return null;
 }

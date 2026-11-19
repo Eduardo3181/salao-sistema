@@ -247,3 +247,79 @@ describe("Histórico das taxas do cartão", () => {
     expect(descreverAuditoria({ ...base, acao: "delete", entidade: "taxas_cartao", depois: null, antes: { forma: "credito_vista", parcelas: 1, taxa_centesimos: 349 } })).toBe("Taxa do crédito à vista removida");
   });
 });
+
+describe("Registro de atividades das comandas", () => {
+  const ctx = {
+    clienteDaComanda: new Map([["cm1", "Maria"]]),
+    nomeServicoProduto: new Map([
+      ["sv1", "Corte"],
+      ["pd1", "Shampoo"],
+    ]),
+    itens: new Map([["it1", { nome: "Corte", comandaId: "cm1" }]]),
+  };
+  const profs = new Map([
+    ["ana", "Ana"],
+    ["carla", "Carla"],
+  ]);
+  const reg = (entidade: string, acao: string, antes: Record<string, unknown> | null, depois: Record<string, unknown> | null, entidade_id: string | null = null) =>
+    descreverAuditoria({ ...base, entidade, acao, antes, depois, entidade_id }, undefined, profs, ctx);
+
+  it("abrir, fechar, cancelar e reabrir comanda, com o nome do cliente", () => {
+    expect(reg("comandas", "insert", null, { id: "cm1", situacao: "aberta" }, "cm1")).toBe("Comanda aberta para Maria");
+    expect(reg("comandas", "update", { situacao: "aberta" }, { situacao: "fechada" }, "cm1")).toBe("Comanda de Maria fechada");
+    expect(reg("comandas", "update", { situacao: "aberta" }, { situacao: "cancelada", motivo_cancelamento: "engano" }, "cm1")).toBe(
+      "Comanda de Maria cancelada. Motivo: engano",
+    );
+    expect(reg("comandas", "update", { situacao: "fechada" }, { situacao: "aberta", motivo_reabertura: "faltou item" }, "cm1")).toBe(
+      "Comanda de Maria reaberta. Motivo: faltou item",
+    );
+    expect(reg("comandas", "update", { desconto_centavos: 0 }, { desconto_centavos: 500 }, "cm1")).toBe(
+      "Desconto na comanda de Maria: de R$ 0,00 para R$ 5,00",
+    );
+    expect(reg("comandas", "update", { comissao_calculada_em: null }, { comissao_calculada_em: "x" }, "cm1")).toBe(
+      "Comissões calculadas na comanda de Maria",
+    );
+    // cliente desconhecido
+    expect(reg("comandas", "insert", null, { id: "cmX" }, "cmX")).toBe("Comanda aberta");
+  });
+
+  it("itens: lançar, mudar valor, excluir e comissão", () => {
+    const corte = { comanda_id: "cm1", tipo: "servico", servico_id: "sv1", profissional_id: "ana", quantidade: 1, total_centavos: 8000 };
+    expect(reg("comanda_itens", "insert", null, corte)).toBe("Corte lançado na comanda de Maria (R$ 80,00, com Ana)");
+    const shampoo = { comanda_id: "cm1", tipo: "produto", produto_id: "pd1", quantidade: 2, total_centavos: 9000 };
+    expect(reg("comanda_itens", "insert", null, shampoo)).toBe("2x Shampoo lançado na comanda de Maria (R$ 90,00)");
+    expect(reg("comanda_itens", "update", corte, { ...corte, total_centavos: 7000 })).toBe(
+      "Corte na comanda de Maria: valor de R$ 80,00 para R$ 70,00",
+    );
+    expect(reg("comanda_itens", "update", corte, { ...corte, removido_em: "x", motivo_remocao: "lançado por engano" })).toBe(
+      "Corte excluído da comanda de Maria. Motivo: lançado por engano",
+    );
+    expect(reg("comanda_itens", "update", corte, { ...corte, regra_snapshot: { v: 1 } })).toBe("Comissão de Corte calculada (comanda de Maria)");
+  });
+
+  it("assistentes do serviço", () => {
+    const a = { item_id: "it1", assistente_id: "carla" };
+    expect(reg("comanda_item_assistentes", "insert", null, a)).toBe("Carla incluído(a) como assistente em Corte (comanda de Maria)");
+    expect(reg("comanda_item_assistentes", "delete", a, null)).toBe("Carla retirado(a) como assistente de Corte (comanda de Maria)");
+    expect(reg("comanda_item_assistentes", "update", { ...a, valor_centavos: null }, { ...a, valor_centavos: 1000 })).toBe(
+      "Comissão de Carla como assistente em Corte: R$ 10,00 (comanda de Maria)",
+    );
+  });
+
+  it("pagamentos", () => {
+    const p = { comanda_id: "cm1", forma: "credito_parcelado", parcelas: 3, valor_centavos: 9000 };
+    expect(reg("pagamentos", "insert", null, p)).toBe("Pagamento de R$ 90,00 no crédito parcelado em 3x na comanda de Maria");
+    expect(reg("pagamentos", "insert", null, { ...p, forma: "pix", parcelas: 1 })).toBe("Pagamento de R$ 90,00 no pix na comanda de Maria");
+    expect(reg("pagamentos", "update", p, { ...p, removido_em: "x", motivo_remocao: "valor errado" })).toBe(
+      "Pagamento de R$ 90,00 no crédito parcelado em 3x excluído da comanda de Maria. Motivo: valor errado",
+    );
+  });
+
+  it("nenhuma tabela auditada fica sem frase (nada de \"insert em ...\")", () => {
+    for (const entidade of ["comandas", "comanda_itens", "comanda_item_assistentes", "pagamentos"]) {
+      for (const acao of ["insert", "update", "delete"]) {
+        expect(descreverAuditoria({ ...base, entidade, acao, antes: {}, depois: acao === "delete" ? null : {} })).not.toMatch(/ em [a-z_]+$/);
+      }
+    }
+  });
+});

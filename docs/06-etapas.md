@@ -75,6 +75,7 @@ Pendências anotadas na Etapa 1 (antes do piloto, salvo indicação):
 5. "Esqueci minha senha": depende do serviço de e-mail próprio (SMTP).
 6. Exportar dados de clientes (LGPD e portabilidade). (feito em 18/11/2026: ficha do cliente > "O cliente pediu os dados dele?" e Clientes > "Baixar todos os clientes", em PDF e Excel, só o dono.)
 7. Dupla verificação (opcional, para todos), feita em 18/11/2026: em Minha senha > Dupla verificação; o banco exige o código de quem ligou.
+8. Registro de atividades em português também para comandas, itens, assistentes e pagamentos (feito em 18/11/2026). Um teste lê do banco todas as tabelas com histórico e falha se alguma ficar sem frase.
 
 ## Etapa 8: piloto e lançamento
 - 3 a 5 salões conhecidos, preço reduzido.

@@ -10,6 +10,7 @@ import {
   dataHoraBrasil,
   descreverAuditoria,
   NOME_PERFIL,
+  type ContextoComandas,
   type MembroEquipe,
   type RegistroAuditoria,
 } from "@/lib/salao";
@@ -55,20 +56,54 @@ async function Painel() {
     : [{ data: null }, { data: null }];
 
   const membros = (equipe ?? []) as MembroEquipe[];
+  const registros = (auditoria ?? []) as RegistroAuditoria[];
+  const unicos = (xs: unknown[]) => [...new Set(xs.filter((x): x is string => typeof x === "string" && x.length > 0))];
+  const campo = (r: RegistroAuditoria, c: string) => r.depois?.[c] ?? r.antes?.[c];
+
+  // Comandas: a auditoria guarda só ids; busca o serviço/produto e o cliente de cada comanda para a frase.
+  const idsItensAssistentes = unicos(registros.filter((r) => r.entidade === "comanda_item_assistentes").map((r) => campo(r, "item_id")));
+  const itensAssistentes = idsItensAssistentes.length
+    ? (((await supabase.from("comanda_itens").select("id, comanda_id, servico_id, produto_id").in("id", idsItensAssistentes)).data ?? []) as {
+        id: string;
+        comanda_id: string;
+        servico_id: string | null;
+        produto_id: string | null;
+      }[])
+    : [];
+  const idsComandas = unicos([
+    ...registros.filter((r) => r.entidade === "comandas").map((r) => r.entidade_id),
+    ...registros.filter((r) => r.entidade === "comanda_itens" || r.entidade === "pagamentos").map((r) => campo(r, "comanda_id")),
+    ...itensAssistentes.map((i) => i.comanda_id),
+  ]);
+  const clientePorComanda = idsComandas.length
+    ? (((await supabase.from("comandas").select("id, cliente_id").in("id", idsComandas)).data ?? []) as { id: string; cliente_id: string }[])
+    : [];
+  const idsServicosProdutos = unicos([
+    ...registros.filter((r) => r.entidade === "comanda_itens").flatMap((r) => [campo(r, "servico_id"), campo(r, "produto_id")]),
+    ...itensAssistentes.flatMap((i) => [i.servico_id, i.produto_id]),
+  ]);
+  const nomeServicoProduto = new Map<string, string>(
+    idsServicosProdutos.length
+      ? (
+          await Promise.all([
+            supabase.from("servicos").select("id, nome").in("id", idsServicosProdutos),
+            supabase.from("produtos").select("id, nome").in("id", idsServicosProdutos),
+          ])
+        ).flatMap((q) => ((q.data ?? []) as { id: string; nome: string }[]).map((x) => [x.id, x.nome] as [string, string]))
+      : [],
+  );
+
   // A auditoria de clientes não guarda o nome (LGPD): busca o nome atual de quem aparece no registro.
-  const idsClientes = [
-    ...new Set(
-      ((auditoria ?? []) as RegistroAuditoria[])
-        .map((r) =>
-          r.entidade === "clientes"
-            ? r.entidade_id
-            : r.entidade === "consentimentos_whatsapp" || r.entidade === "agendamentos"
-              ? ((r.depois?.cliente_id ?? r.antes?.cliente_id) as string | undefined)
-              : null,
-        )
-        .filter((id): id is string => Boolean(id)),
+  const idsClientes = unicos([
+    ...registros.map((r) =>
+      r.entidade === "clientes"
+        ? r.entidade_id
+        : r.entidade === "consentimentos_whatsapp" || r.entidade === "agendamentos"
+          ? campo(r, "cliente_id")
+          : null,
     ),
-  ];
+    ...clientePorComanda.map((c) => c.cliente_id),
+  ]);
   const nomesProfissionais = new Map(
     ehDono
       ? ((await supabase.from("profissionais").select("id, nome").eq("salao_id", salao.salaoId)).data ?? []).map((p) => [
@@ -82,6 +117,13 @@ async function Painel() {
       ? ((await supabase.from("clientes").select("id, nome").in("id", idsClientes)).data ?? []).map((c) => [c.id as string, c.nome as string])
       : [],
   );
+  const contextoComandas: ContextoComandas = {
+    clienteDaComanda: new Map(clientePorComanda.map((c) => [c.id, nomesClientes.get(c.cliente_id) ?? "cliente removido"])),
+    nomeServicoProduto,
+    itens: new Map(
+      itensAssistentes.map((i) => [i.id, { nome: nomeServicoProduto.get(i.servico_id ?? i.produto_id ?? "") ?? "um serviço", comandaId: i.comanda_id }]),
+    ),
+  };
   const temProfissionais = ehDono
     ? ((await supabase.from("profissionais").select("id", { count: "exact", head: true }).eq("salao_id", salao.salaoId))
         .count ?? 0) > 0
@@ -298,7 +340,7 @@ async function Painel() {
             <ul className="mt-4 divide-y divide-stone-100">
               {(auditoria as RegistroAuditoria[]).map((r) => (
                 <li key={r.id} className="flex flex-col gap-0.5 py-3 sm:flex-row sm:justify-between sm:gap-4">
-                  <span className="text-sm text-stone-800">{descreverAuditoria(r, nomesClientes, nomesProfissionais)}</span>
+                  <span className="text-sm text-stone-800">{descreverAuditoria(r, nomesClientes, nomesProfissionais, contextoComandas)}</span>
                   <span className="shrink-0 text-xs text-stone-500">
                     {dataHoraBrasil(r.em)} · {autor(r.user_id)}
                   </span>

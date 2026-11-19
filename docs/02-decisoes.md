@@ -165,3 +165,10 @@ Também: **alterar senha e "esqueci minha senha"** entram no MVP (segurança bá
   - As quatro primeiras colunas têm os mesmos nomes da importação, então a planilha volta pelo importador.
   - Clientes com dados apagados não entram.
 - Cada exportação fica no histórico: quem baixou, quando e de qual cliente, sem nenhum dado pessoal.
+
+## Dupla verificação (decisão da dona, 18/11/2026)
+- **Opcional, para todos:** cada pessoa liga em Minha senha > Dupla verificação.
+  - O painel do dono mostra um aviso recomendando ligar.
+  - Pode virar obrigatória para o dono mais adiante.
+- **Como funciona:** senha + código de 6 números de um aplicativo no celular (Google Authenticator, Microsoft Authenticator ou outro). Não depende de SMS nem de e-mail.
+- **Perdeu o celular:** o suporte desliga depois de confirmar que é mesmo a pessoa, usando `scripts/desligar-dupla-verificacao.mjs`. Não há códigos de recuperação por enquanto.

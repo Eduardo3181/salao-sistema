@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { headers } from "next/headers";
 import { redirect } from "next/navigation";
+import { faltaCodigo } from "@/lib/dupla";
 import { criarClienteSupabase } from "@/lib/supabase/server";
 
 export type EstadoForm = { erro?: string; aviso?: string; email?: string; concluido?: boolean } | undefined;
@@ -61,7 +62,8 @@ export async function entrar(_: EstadoForm, form: FormData): Promise<EstadoForm>
   if (error) return { erro: traduzirErro(error.message), email };
 
   revalidatePath("/", "layout");
-  redirect("/painel");
+  // Quem ligou a dupla verificação ainda precisa digitar o código do aplicativo.
+  redirect((await faltaCodigo(supabase)) ? "/entrar/codigo" : "/painel");
 }
 
 export async function sair() {

@@ -2,7 +2,7 @@ import { createServerClient } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
 
 /** Páginas que exigem login. */
-const PROTEGIDAS = ["/painel", "/novo-salao", "/trocar-senha", "/servicos", "/produtos", "/profissionais", "/clientes", "/configuracoes", "/importar", "/aniversarios", "/agenda", "/comandas", "/caixa", "/despesas", "/relatorios", "/comissoes", "/mais", "/minha-senha"];
+const PROTEGIDAS = ["/painel", "/novo-salao", "/trocar-senha", "/servicos", "/produtos", "/profissionais", "/clientes", "/configuracoes", "/importar", "/aniversarios", "/agenda", "/comandas", "/caixa", "/despesas", "/relatorios", "/comissoes", "/mais", "/minha-senha", "/dupla-verificacao", "/entrar/codigo"];
 /** Páginas só para quem não está logado. */
 const SO_VISITANTE = ["/", "/entrar", "/criar-conta"];
 
@@ -48,6 +48,19 @@ export async function proxy(request: NextRequest) {
     destino.pathname = "/entrar";
     destino.search = "";
     return NextResponse.redirect(destino);
+  }
+
+  // Dupla verificação: quem ligou precisa digitar o código antes de qualquer página protegida.
+  // (O banco também confere: sem o código, não mostra nenhum dado do salão.)
+  if (logado && PROTEGIDAS.some((p) => url.pathname.startsWith(p))) {
+    const { data: nivel } = await supabase.auth.mfa.getAuthenticatorAssuranceLevel();
+    const falta = nivel?.currentLevel === "aal1" && nivel?.nextLevel === "aal2";
+    if (falta !== (url.pathname === "/entrar/codigo")) {
+      const destino = url.clone();
+      destino.pathname = falta ? "/entrar/codigo" : "/painel";
+      destino.search = "";
+      return NextResponse.redirect(destino);
+    }
   }
 
   // Quem já está logado não precisa ver a capa nem as telas de acesso.

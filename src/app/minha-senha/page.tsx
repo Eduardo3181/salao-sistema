@@ -1,4 +1,6 @@
 import type { Metadata } from "next";
+import { ShieldCheck } from "lucide-react";
+import Link from "next/link";
 import { Suspense } from "react";
 import { Cabecalho } from "@/components/cabecalho";
 import { exigirSalao } from "@/lib/sessao";
@@ -29,6 +31,16 @@ async function MinhaSenha() {
         <section className="rounded-2xl bg-white p-5 shadow-sm ring-1 ring-stone-200">
           <FormMinhaSenha />
         </section>
+        <Link
+          href="/dupla-verificacao"
+          className="flex items-center gap-3 rounded-2xl bg-white p-5 shadow-sm ring-1 ring-stone-200 hover:bg-stone-50"
+        >
+          <ShieldCheck aria-hidden className="h-5 w-5 shrink-0 text-rose-700" />
+          <span className="min-w-0">
+            <span className="block font-semibold text-stone-900">Dupla verificação</span>
+            <span className="block text-sm text-stone-600">Além da senha, um código do celular. Recomendado para o dono.</span>
+          </span>
+        </Link>
       </main>
     </div>
   );

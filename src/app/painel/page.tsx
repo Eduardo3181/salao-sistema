@@ -1,4 +1,4 @@
-import { TriangleAlert } from "lucide-react";
+import { ShieldCheck, TriangleAlert } from "lucide-react";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { redirect } from "next/navigation";
@@ -13,6 +13,7 @@ import {
   type MembroEquipe,
   type RegistroAuditoria,
 } from "@/lib/salao";
+import { aplicativoConfirmado } from "@/lib/dupla";
 import { usuarioLogado } from "@/lib/supabase/server";
 import { mudarAcesso } from "./acoes-equipe";
 import FormEquipe from "./form-equipe";
@@ -129,6 +130,8 @@ async function Painel() {
     : [];
   const contasAtrasadas = contasPendentes.filter((c) => c.vencimento < hojeBrasilia()).length;
   const contasHoje = contasPendentes.length - contasAtrasadas;
+  // Recomendação (só o dono): ligar a dupla verificação.
+  const semDupla = ehDono && !(await aplicativoConfirmado(supabase));
   const nomePorUsuario = new Map(membros.map((m) => [m.user_id, m.nome ?? m.email]));
   const autor = (id: string | null) =>
     id === userId ? "por você" : id && nomePorUsuario.get(id) ? `por ${nomePorUsuario.get(id)}` : "pelo sistema";
@@ -138,6 +141,18 @@ async function Painel() {
       <Cabecalho salao={salao} atual="/painel" />
 
       <main className="mx-auto w-full max-w-3xl flex-1 space-y-6 px-4 py-6">
+        {semDupla && (
+          <Link
+            href="/dupla-verificacao"
+            className="flex items-center gap-3 rounded-2xl bg-white px-5 py-4 text-stone-800 shadow-sm ring-1 ring-rose-200 hover:bg-rose-50"
+          >
+            <ShieldCheck aria-hidden className="h-5 w-5 shrink-0 text-rose-700" />
+            <span className="flex-1 text-sm">
+              <strong>Proteja a sua conta com a dupla verificação.</strong> Além da senha, um código do celular. Leva 2 minutos.
+            </span>
+            <span className="text-sm font-semibold text-rose-700">Ligar</span>
+          </Link>
+        )}
         {caixaEsquecido && (
           <Link
             href={`/caixa?d=${caixaEsquecido.data}`}

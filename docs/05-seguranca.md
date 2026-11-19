@@ -5,7 +5,12 @@
 - [x] Login pelo Supabase Auth; senhas nunca guardadas por nós
 - [x] RLS ativa em todas as tabelas de negócio, com teste de isolamento entre salões (`tests/isolamento.test.ts`; o teste também falha se alguma tabela do schema `public` ficar sem RLS)
 - [x] **Teste do intruso** (`tests/intruso.test.ts`, 18/11/2026): o dono de outro salão e alguém sem login tentam usar TODAS as funções do banco contra um salão cheio de dados; o teste passa só se nada mudar e nada vazar. Função nova entra no teste sozinha.
-- [ ] Perfis de acesso (feito: dono, recepção, profissional, assistente) e 2FA para o dono (falta)
+- [x] Perfis de acesso (dono, recepção, profissional, assistente) e dupla verificação (2FA), feita em 18/11/2026.
+  - É opcional, para qualquer pessoa; o painel do dono recomenda ligar.
+  - Usa um código de aplicativo no celular (TOTP).
+  - O banco exige o código: quem ligou e entrou só com a senha não vê nenhum dado do salão (`tests/dupla-verificacao.test.ts`).
+  - Se a pessoa perder o celular, o suporte desliga com `scripts/desligar-dupla-verificacao.mjs`, depois de confirmar quem ela é.
+  - Ligar e desligar não entram no histórico do salão, porque é uma configuração da conta da pessoa, não do salão.
 - [x] SQL injection: o site só fala com o banco por funções e consultas com parâmetros; nenhum SQL montado com texto digitado. XSS: nenhuma tela injeta HTML; o React escapa o texto. CSRF: as ações do Next.js só aceitam pedidos do próprio site.
 - [ ] Limite de tentativas de login: o Supabase já limita; revisar os números no projeto de produção.
 - [x] Cabeçalhos de segurança em todas as páginas (18/11/2026): proibido abrir o sistema dentro de outro site, sempre HTTPS, sem câmera/microfone/localização.

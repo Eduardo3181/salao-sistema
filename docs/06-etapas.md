@@ -17,7 +17,7 @@ Pendências anotadas na Etapa 1 (antes do piloto, salvo indicação):
 - Serviço de e-mail próprio (SMTP) e modelos de e-mail do Supabase em português.
 - Convite da equipe por e-mail (hoje é por senha provisória).
 - Apagar a chave secreta "default" do Supabase, que não é usada (a usada é a "site").
-- Quem perdeu o acesso e entra de novo cai em "Cadastre o seu salão"; mostrar um aviso mais claro.
+- Quem perdeu o acesso e entra de novo cai em "Cadastre o seu salão"; mostrar um aviso mais claro. (feito em 24/11/2026: aparece "Seu acesso foi retirado" com o nome do salão.)
 - Projeto Supabase de produção em São Paulo e planos pagos (Supabase e Vercel) antes de dados reais.
 - LGPD: "excluir pessoa". (feito em 18/11/2026; regras em 02-decisoes.md.)
 
